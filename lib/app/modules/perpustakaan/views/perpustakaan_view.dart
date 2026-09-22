@@ -60,12 +60,12 @@ class _TopTabs extends StatelessWidget {
       () => Row(
         children: [
           _TabButton(
-            label: 'Histori',
+            label: 'library_history_tab'.tr,
             selected: controller.tabIndex.value == 0,
             onTap: () => controller.changeTab(0),
           ),
           _TabButton(
-            label: 'Koleksi',
+            label: 'library_collection_tab'.tr,
             selected: controller.tabIndex.value == 1,
             onTap: () => controller.changeTab(1),
           ),
@@ -146,7 +146,8 @@ class _CategoryFilterRow extends StatelessWidget {
                     child: Text(
                       controller.categories[i],
                       style: TextStyle(
-                        color: selected ? Colors.white : AppColors.textSecondary,
+                        color:
+                            selected ? Colors.white : AppColors.textSecondary,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -165,9 +166,10 @@ class _CategoryFilterRow extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.tune_rounded, size: 16, color: AppColors.textSecondary),
+                  Icon(Icons.tune_rounded,
+                      size: 16, color: AppColors.textSecondary),
                   const SizedBox(width: 6),
-                  Text('Filter',
+                  Text('library_filter'.tr,
                       style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 13,
@@ -191,7 +193,7 @@ class _HistoriList extends StatelessWidget {
     return Obx(() {
       final list = controller.filteredHistory;
       if (list.isEmpty) {
-        return const Center(child: Text('Belum ada histori bacaan.'));
+        return Center(child: Text('library_no_history'.tr));
       }
       return ListView.separated(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -211,7 +213,8 @@ class _HistoriList extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  BookCover(
+                  BookCoverImage(
+                    coverAsset: book.coverAsset,
                     gradient: book.coverGradient,
                     icon: book.coverIcon,
                     width: 56,
@@ -229,7 +232,8 @@ class _HistoriList extends StatelessWidget {
                             Expanded(
                               child: Text(book.title,
                                   style: const TextStyle(
-                                      fontWeight: FontWeight.w700, fontSize: 15)),
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15)),
                             ),
                             CategoryBadge(category: book.category),
                           ],
@@ -242,7 +246,7 @@ class _HistoriList extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Progres Bacaan',
+                            Text('library_reading_progress'.tr,
                                 style: TextStyle(
                                     color: AppColors.textMuted, fontSize: 11)),
                             Text(book.progressLabel,
@@ -313,14 +317,17 @@ class _KoleksiGrid extends StatelessWidget {
                   child: Stack(
                     children: [
                       Positioned.fill(
-                        child: BookCover(
+                        child: BookCoverImage(
+                          coverAsset: book.coverAsset,
                           gradient: book.coverGradient,
                           icon: book.coverIcon,
                           borderRadius: 12,
                         ),
                       ),
                       Positioned(
-                          top: 8, left: 8, child: CategoryBadge(category: book.category)),
+                          top: 8,
+                          left: 8,
+                          child: CategoryBadge(category: book.category)),
                       Positioned(
                         left: 0,
                         right: 0,
@@ -349,7 +356,8 @@ class _KoleksiGrid extends StatelessWidget {
                 Text(book.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: 13)),
                 Text(
                   book.status == 'Selesai' ? 'Selesai' : book.chapterLabel,
                   style: TextStyle(
@@ -392,7 +400,7 @@ class DottedAddCard extends StatelessWidget {
             child: Icon(Icons.add, color: AppColors.textMuted),
           ),
           const SizedBox(height: 8),
-          Text('Tambah Koleksi',
+          Text('library_add_collection'.tr,
               style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
         ],
       ),

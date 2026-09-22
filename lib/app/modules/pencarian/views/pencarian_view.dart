@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../data/models/book_model.dart';
+import '../../../services/locale_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/book_cover.dart';
 import '../../../widgets/rating_stars.dart';
@@ -37,8 +38,8 @@ class PencarianView extends GetView<PencarianController> {
                           Expanded(
                             child: TextField(
                               onChanged: (v) => controller.searchText.value = v,
-                              decoration: const InputDecoration(
-                                hintText: 'Cari judul atau penulis...',
+                              decoration: InputDecoration(
+                                hintText: 'search_hint'.tr,
                                 border: InputBorder.none,
                                 isDense: true,
                               ),
@@ -48,7 +49,12 @@ class PencarianView extends GetView<PencarianController> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
+                  // Tombol Ganti Bahasa
+                  IconButton(
+                    icon: const Icon(Icons.language_rounded, color: AppColors.primaryNavy),
+                    onPressed: () => _showLanguageSelector(context),
+                  ),
                   InkWell(
                     onTap: () => _openFilterSheet(context),
                     borderRadius: BorderRadius.circular(24),
@@ -71,8 +77,10 @@ class PencarianView extends GetView<PencarianController> {
                 final list = controller.results;
                 if (list.isEmpty) {
                   return Center(
-                    child: Text('Tidak ada hasil ditemukan',
-                        style: TextStyle(color: AppColors.textMuted)),
+                    child: Text(
+                      'search_no_results'.tr,
+                      style: TextStyle(color: AppColors.textMuted),
+                    ),
                   );
                 }
                 return ListView.separated(
@@ -99,6 +107,51 @@ class PencarianView extends GetView<PencarianController> {
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+    );
+  }
+
+  // Pemilih bahasa cepat. Memakai LocaleService yang sama dengan halaman
+  // Pengaturan supaya pilihan bahasa selalu konsisten & tersimpan di seluruh
+  // aplikasi (bukan Get.updateLocale langsung yang tidak tersimpan).
+  void _showLanguageSelector(BuildContext context) {
+    final localeService = Get.find<LocaleService>();
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Obx(
+          () => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'settings_language'.tr,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              ...AppLanguage.values.map(
+                (lang) => ListTile(
+                  leading: Icon(
+                    localeService.currentLanguage.value == lang
+                        ? Icons.radio_button_checked_rounded
+                        : Icons.radio_button_off_rounded,
+                    color: AppColors.primaryNavy,
+                  ),
+                  title: Text(lang.displayName),
+                  onTap: () {
+                    localeService.changeLanguage(lang);
+                    Get.back();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -129,21 +182,22 @@ class _SearchResultTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(book.title,
-                    style:
-                        const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                Text(
+                  book.title,
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                ),
                 const SizedBox(height: 2),
-                Text(book.author,
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                Text(
+                  book.author,
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppColors.badgeForCategory(book.category)
-                            .withOpacity(0.12),
+                        color: AppColors.badgeForCategory(book.category).withOpacity(0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -157,8 +211,7 @@ class _SearchResultTile extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: (book.status == 'Selesai'
                                 ? AppColors.success
@@ -167,7 +220,7 @@ class _SearchResultTile extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        book.status,
+                        book.status == 'Selesai' ? 'search_status_finished'.tr : 'search_status_ongoing'.tr,
                         style: TextStyle(
                           color: book.status == 'Selesai'
                               ? AppColors.success
@@ -218,8 +271,10 @@ class _FilterSheet extends GetView<PencarianController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Filter & Urutkan',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                Text(
+                  'search_filter_sort'.tr,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded),
                   onPressed: Get.back,
@@ -227,11 +282,14 @@ class _FilterSheet extends GetView<PencarianController> {
               ],
             ),
             const SizedBox(height: 12),
-            Text('Kategori',
-                style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    color: AppColors.textPrimary)),
+            Text(
+              'search_category'.tr,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                color: AppColors.textPrimary,
+              ),
+            ),
             const SizedBox(height: 10),
             Obx(
               () => Wrap(
@@ -263,18 +321,21 @@ class _FilterSheet extends GetView<PencarianController> {
               ),
             ),
             const SizedBox(height: 20),
-            Text('Status',
-                style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    color: AppColors.textPrimary)),
+            Text(
+              'search_status'.tr,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                color: AppColors.textPrimary,
+              ),
+            ),
             Obx(
               () => Column(
                 children: [
                   CheckboxListTile(
                     value: controller.statusSelesai.value,
                     onChanged: controller.toggleSelesai,
-                    title: const Text('Selesai'),
+                    title: Text('search_status_finished'.tr),
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
                     activeColor: AppColors.primaryNavy,
@@ -282,7 +343,7 @@ class _FilterSheet extends GetView<PencarianController> {
                   CheckboxListTile(
                     value: controller.statusOngoing.value,
                     onChanged: controller.toggleOngoing,
-                    title: const Text('Ongoing'),
+                    title: Text('search_status_ongoing'.tr),
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
                     activeColor: AppColors.primaryNavy,
@@ -291,11 +352,14 @@ class _FilterSheet extends GetView<PencarianController> {
               ),
             ),
             const SizedBox(height: 12),
-            Text('Urutkan Berdasarkan',
-                style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    color: AppColors.textPrimary)),
+            Text(
+              'search_sort_by'.tr,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                color: AppColors.textPrimary,
+              ),
+            ),
             Obx(
               () => Column(
                 children: [
@@ -303,7 +367,7 @@ class _FilterSheet extends GetView<PencarianController> {
                     value: SortBy.terpopuler,
                     groupValue: controller.sortBy.value,
                     onChanged: (v) => controller.setSort(v!),
-                    title: const Text('Terpopuler'),
+                    title: Text('search_sort_popular'.tr),
                     contentPadding: EdgeInsets.zero,
                     activeColor: AppColors.primaryNavy,
                   ),
@@ -311,7 +375,7 @@ class _FilterSheet extends GetView<PencarianController> {
                     value: SortBy.terbaru,
                     groupValue: controller.sortBy.value,
                     onChanged: (v) => controller.setSort(v!),
-                    title: const Text('Terbaru'),
+                    title: Text('search_sort_newest'.tr),
                     contentPadding: EdgeInsets.zero,
                     activeColor: AppColors.primaryNavy,
                   ),
@@ -319,7 +383,7 @@ class _FilterSheet extends GetView<PencarianController> {
                     value: SortBy.ratingTertinggi,
                     groupValue: controller.sortBy.value,
                     onChanged: (v) => controller.setSort(v!),
-                    title: const Text('Rating Tertinggi'),
+                    title: Text('search_sort_top_rated'.tr),
                     contentPadding: EdgeInsets.zero,
                     activeColor: AppColors.primaryNavy,
                   ),
@@ -331,7 +395,7 @@ class _FilterSheet extends GetView<PencarianController> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: controller.applyFilter,
-                child: const Text('Terapkan Filter'),
+                child: Text('search_apply_filter'.tr),
               ),
             ),
           ],

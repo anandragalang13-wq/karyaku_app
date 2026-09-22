@@ -24,24 +24,47 @@ class ProfilController extends GetxController {
         pengikut: 0,
       );
 
+  /// Pengaturan & Bantuan bisa diakses tanpa login.
   void openSettings() => Get.toNamed(Routes.PENGATURAN_AKUN);
   void openStatistik() => Get.toNamed(Routes.STATISTIK);
+
+  void openHelp() {
+    Get.defaultDialog(
+      title: 'profile_help_feedback'.tr,
+      middleText: 'profile_help_dialog_message'.tr,
+      textConfirm: 'common_close'.tr,
+      onConfirm: () => Get.back(),
+    );
+  }
 
   bool get isWriter => user.isWriter;
 
   /// Pembaca yang belum jadi penulis: buka form registrasi penulis
-  /// terpisah (nama pena, genre, dsb).
-  void goToWriterRegistration() => Get.toNamed(Routes.DAFTAR_PENULIS);
+  /// terpisah (nama pena, genre, dsb). Wajib login dulu karena data
+  /// penulis melekat pada akun pengguna — kalau masih guest, arahkan
+  /// ke halaman login dulu.
+  void goToWriterRegistration() {
+    if (!isLoggedIn) {
+      Get.toNamed(Routes.LOGIN);
+      Get.snackbar(
+        'review_login_required_title'.tr,
+        'profile_writer_login_required_message'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    Get.toNamed(Routes.DAFTAR_PENULIS);
+  }
 
   /// Hanya bisa diakses setelah resmi jadi penulis: buka form Tambah Karya.
   void addNewWork() => Get.toNamed(Routes.TAMBAH_KARYA);
 
   void logout() {
     Get.defaultDialog(
-      title: 'Keluar Akun',
-      middleText: 'Apakah Anda yakin ingin keluar dari akun ini?',
-      textConfirm: 'Keluar',
-      textCancel: 'Batal',
+      title: 'settings_logout_confirm_title'.tr,
+      middleText: 'settings_logout_confirm_message'.tr,
+      textConfirm: 'settings_logout_confirm_yes'.tr,
+      textCancel: 'settings_logout_confirm_cancel'.tr,
       onConfirm: () {
         _auth.logout();
         Get.back();

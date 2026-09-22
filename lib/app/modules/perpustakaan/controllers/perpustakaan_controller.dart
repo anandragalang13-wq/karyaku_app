@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../../../data/mock_data.dart';
+import '../../../data/mock_works_data.dart';
 import '../../../data/models/book_model.dart';
 import '../../../routes/app_routes.dart';
 
@@ -12,8 +12,9 @@ class PerpustakaanController extends GetxController {
 
   final categories = const ['Semua', 'Novel', 'Puisi', 'Cerpen'];
 
-  final List<BookModel> _history = MockData.historyBooks;
-  final List<BookModel> _collection = MockData.collectionBooks;
+  // Sumber buku disamakan dengan yang tampil di Beranda (karya approved).
+  final List<BookModel> _history = MockWorksData.getApprovedWorksAsBooks();
+  final List<BookModel> _collection = MockWorksData.getApprovedWorksAsBooks();
 
   List<BookModel> get filteredHistory => _filter(_history);
   List<BookModel> get filteredCollection => _filter(_collection);

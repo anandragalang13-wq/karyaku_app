@@ -7,8 +7,10 @@ import 'app/routes/app_pages.dart';
 import 'app/routes/app_routes.dart';
 import 'app/services/auth_service.dart';
 import 'app/services/book_service.dart';
+import 'app/services/locale_service.dart';
 import 'app/services/supabase_auth_service.dart';
 import 'app/theme/app_theme.dart';
+import 'app/translations/app_translations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,12 +24,21 @@ void main() async {
   Get.put<BookService>(BookService(), permanent: true);
   Get.put(AuthService(), permanent: true);
 
-  runApp(const KaryakuApp());
+  // Muat bahasa yang tersimpan (default: Bahasa Indonesia) sebelum
+  // aplikasi dijalankan supaya tampilan pertama sudah sesuai pilihan user.
+  final localeService = await Get.putAsync<LocaleService>(
+    () => LocaleService().init(),
+    permanent: true,
+  );
+
+  runApp(KaryakuApp(initialLocale: localeService.currentLanguage.value.locale));
 }
 
 /// Root widget aplikasi KARYAKU dengan GetMaterialApp
 class KaryakuApp extends StatelessWidget {
-  const KaryakuApp({super.key});
+  final Locale initialLocale;
+
+  const KaryakuApp({super.key, required this.initialLocale});
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +48,9 @@ class KaryakuApp extends StatelessWidget {
       theme: AppTheme.light,
       initialRoute: Routes.SPLASH,
       getPages: AppPages.pages,
+      translations: AppTranslations(),
+      locale: initialLocale,
+      fallbackLocale: const Locale('id', 'ID'),
     );
   }
 }

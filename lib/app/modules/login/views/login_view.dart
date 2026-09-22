@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/auth_header.dart';
 import '../controllers/login_controller.dart';
+
 class LoginView extends GetView<LoginController> {
   const LoginView({super.key});
 
@@ -65,7 +66,8 @@ class LoginView extends GetView<LoginController> {
                         ),
                         child: const Text(
                           'Lupa Kata Sandi?',
-                          style: TextStyle(color: AppColors.accentBlue, fontSize: 12.5),
+                          style: TextStyle(
+                              color: AppColors.accentBlue, fontSize: 12.5),
                         ),
                       ),
                     ),
@@ -76,7 +78,8 @@ class LoginView extends GetView<LoginController> {
                               padding: const EdgeInsets.only(bottom: 8),
                               child: Text(
                                 controller.errorText.value,
-                                style: const TextStyle(color: AppColors.danger, fontSize: 12.5),
+                                style: const TextStyle(
+                                    color: AppColors.danger, fontSize: 12.5),
                               ),
                             ),
                     ),
@@ -85,7 +88,9 @@ class LoginView extends GetView<LoginController> {
                       width: double.infinity,
                       child: Obx(
                         () => ElevatedButton(
-                          onPressed: controller.isLoading.value ? null : controller.login,
+                          onPressed: controller.isLoading.value
+                              ? null
+                              : controller.login,
                           child: controller.isLoading.value
                               ? const SizedBox(
                                   width: 20,
@@ -106,7 +111,8 @@ class LoginView extends GetView<LoginController> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Text('atau',
-                              style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                              style: TextStyle(
+                                  color: AppColors.textMuted, fontSize: 12)),
                         ),
                         Expanded(child: Divider(color: AppColors.border)),
                       ],
@@ -116,7 +122,11 @@ class LoginView extends GetView<LoginController> {
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: controller.loginWithGoogle,
-                        icon: const Icon(Icons.g_mobiledata_rounded, size: 26),
+                        icon: Image.asset(
+                          'assets/images/google_logo.png',
+                          width: 22,
+                          height: 22,
+                        ),
                         label: const Text('Masuk dengan Google'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textPrimary,
@@ -131,7 +141,8 @@ class LoginView extends GetView<LoginController> {
                     Center(
                       child: RichText(
                         text: TextSpan(
-                          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                          style: TextStyle(
+                              color: AppColors.textSecondary, fontSize: 13),
                           children: [
                             const TextSpan(text: 'Belum punya akun? '),
                             TextSpan(

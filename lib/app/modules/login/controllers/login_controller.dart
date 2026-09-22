@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../data/mock_data.dart';
 import '../../../routes/app_routes.dart';
 import '../../../services/auth_service.dart';
 
@@ -14,40 +13,74 @@ class LoginController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxString errorText = ''.obs;
 
-  void togglePasswordVisibility() => isPasswordHidden.toggle();
+  void togglePasswordVisibility() {
+    isPasswordHidden.toggle();
+  }
 
   Future<void> login() async {
     final email = emailController.text.trim();
     final password = passwordController.text;
 
-    if (email.isEmpty || password.isEmpty) {
-      errorText.value = 'Email dan kata sandi wajib diisi.';
+    // Reset error
+    errorText.value = '';
+
+    // Validasi sederhana
+    if (email.isEmpty) {
+      errorText.value = 'Email harus diisi.';
       return;
     }
-    errorText.value = '';
-    isLoading.value = true;
 
-    // Simulasi proses autentikasi ke backend.
-    await Future.delayed(const Duration(milliseconds: 900));
+    if (password.isEmpty) {
+      errorText.value = 'Kata sandi harus diisi.';
+      return;
+    }
 
-    isLoading.value = false;
+    try {
+      isLoading.value = true;
 
-    // Simulasi user berhasil masuk (belum ada backend asli).
-    AuthService.to.login(MockData.currentUser);
-    Get.offAllNamed(Routes.MAIN);
+      // Login ke Supabase
+      await AuthService.to.login(
+        email: email,
+        password: password,
+      );
+
+      // Kalau login Supabase berhasil
+      if (AuthService.to.isLoggedIn.value) {
+        // Langsung masuk ke halaman utama
+        Get.offAllNamed(Routes.MAIN);
+      } else {
+        errorText.value =
+            AuthService.to.errorMessage.value.isNotEmpty
+                ? AuthService.to.errorMessage.value
+                : 'Email atau kata sandi salah.';
+      }
+    } catch (e) {
+      errorText.value = 'Terjadi kesalahan saat login.';
+      print('Login Controller Error: $e');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void loginWithGoogle() {
-    Get.snackbar('Masuk dengan Google', 'Menghubungkan ke akun Google...',
-        snackPosition: SnackPosition.BOTTOM);
+    Get.snackbar(
+      'Masuk dengan Google',
+      'Menghubungkan ke akun Google...',
+      snackPosition: SnackPosition.BOTTOM,
+    );
   }
 
   void forgotPassword() {
-    Get.snackbar('Lupa Kata Sandi', 'Tautan reset kata sandi akan dikirim ke email Anda.',
-        snackPosition: SnackPosition.BOTTOM);
+    Get.snackbar(
+      'Lupa Kata Sandi',
+      'Tautan reset kata sandi akan dikirim ke email Anda.',
+      snackPosition: SnackPosition.BOTTOM,
+    );
   }
 
-  void goToRegister() => Get.toNamed(Routes.REGISTER);
+  void goToRegister() {
+    Get.toNamed(Routes.REGISTER);
+  }
 
   @override
   void onClose() {

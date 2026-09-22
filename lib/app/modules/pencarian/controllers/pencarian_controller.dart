@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../../../data/mock_data.dart';
+import '../../../data/mock_works_data.dart';
 import '../../../data/models/book_model.dart';
 import '../../../routes/app_routes.dart';
 
@@ -9,7 +9,8 @@ enum SortBy { terpopuler, terbaru, ratingTertinggi }
 /// Controller halaman Pencarian (Temukan): kata kunci pencarian dan
 /// filter & pengurutan lewat bottom sheet "Filter & Urutkan".
 class PencarianController extends GetxController {
-  final List<BookModel> _allResults = MockData.searchResults;
+  // Sumber buku disamakan dengan yang tampil di Beranda (karya approved).
+  final List<BookModel> _allResults = MockWorksData.getApprovedWorksAsBooks();
 
   // State filter (nilai sementara di bottom sheet, diterapkan saat "Terapkan Filter")
   final RxInt filterCategoryIndex = 0.obs; // 0 Semua,1 Cerpen,2 Puisi,3 Novel

@@ -1,36 +1,37 @@
 import 'package:get/get.dart';
 
 import '../data/models/user_model.dart';
+import 'supabase_auth_service.dart';
 
-/// Menyimpan status autentikasi pengguna secara global.
-/// Di-inject sekali di main.dart (Get.put(AuthService(), permanent: true))
-/// sehingga bisa diakses dari mana saja lewat AuthService.to.
+/// Wrapper tipis di atas [SupabaseAuthService].
+/// Controller lain (Profil, Login, Register, Detail Buku, Daftar Penulis)
+/// tetap memakai AuthService.to seperti sebelumnya, tapi sekarang state
+/// yang dibaca/ditulis benar-benar berasal dari Supabase.
 class AuthService extends GetxService {
   static AuthService get to => Get.find<AuthService>();
 
-  final RxBool isLoggedIn = false.obs;
-  final Rx<UserModel?> currentUser = Rx<UserModel?>(null);
+  final SupabaseAuthService _supabaseAuth = SupabaseAuthService.to;
 
-  /// Dipanggil setelah proses login/register berhasil.
-  void login(UserModel user) {
-    currentUser.value = user;
-    isLoggedIn.value = true;
-  }
+  RxBool get isLoggedIn => _supabaseAuth.isLoggedIn;
+  Rx<UserModel?> get currentUser => _supabaseAuth.currentUser;
+  RxBool get isLoading => _supabaseAuth.isLoading;
+  RxString get errorMessage => _supabaseAuth.errorMessage;
 
-  void logout() {
-    currentUser.value = null;
-    isLoggedIn.value = false;
-  }
+  Future<void> login({required String email, required String password}) =>
+      _supabaseAuth.login(email: email, password: password);
 
-  /// Menandai pengguna yang sedang login sebagai penulis, dengan data
-  /// hasil pengisian form registrasi penulis (nama pena & genre).
-  void becomeWriter({required String penName, List<String> favoriteGenres = const []}) {
-    final user = currentUser.value;
-    if (user == null) return;
-    currentUser.value = user.copyWith(
-      isWriter: true,
-      penName: penName,
-      favoriteGenres: favoriteGenres,
-    );
-  }
+  Future<void> register({
+    required String email,
+    required String password,
+    required String name,
+  }) =>
+      _supabaseAuth.register(email: email, password: password, name: name);
+
+  Future<void> logout() => _supabaseAuth.logout();
+
+  Future<void> becomeWriter({
+    required String penName,
+    List<String> favoriteGenres = const [],
+  }) =>
+      _supabaseAuth.becomeWriter(penName: penName, favoriteGenres: favoriteGenres);
 }

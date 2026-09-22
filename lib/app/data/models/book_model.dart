@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
-/// Model utama untuk sebuah karya sastra (novel, puisi, atau cerpen).
 class BookModel {
   final String id;
   final String title;
   final String author;
-  final String category; // Novel, Puisi, Cerpen
+  final String category;
   final double rating;
   final int views;
   final int totalChapters;
   final int currentChapter;
   final String synopsis;
   final List<String> tags;
-  final String status; // Ongoing, Selesai
-  final double progress; // 0.0 - 1.0, dipakai di Histori
+  final String status;
+  final double progress;
   final List<Color> coverGradient;
   final IconData coverIcon;
+  final String? coverAsset;   // <-- tambah ini
 
   const BookModel({
     required this.id,
@@ -32,17 +33,15 @@ class BookModel {
     this.progress = 0.0,
     required this.coverGradient,
     this.coverIcon = Icons.menu_book_rounded,
+    this.coverAsset,          // <-- tambah ini
   });
 
   String get progressLabel => '${(progress * 100).round()}%';
   String get chapterLabel => 'Bab $currentChapter/$totalChapters';
 
-  /// Factory constructor untuk mapping data JSON dari Supabase
   factory BookModel.fromJson(Map<String, dynamic> json) {
     final int totalCh = json['total_chapters'] ?? 0;
     final int currentCh = json['current_chapter'] ?? 0;
-    
-    // Hitung progress membaca secara manual jika tidak ada di JSON
     final double calcProgress = totalCh > 0 ? (currentCh / totalCh) : 0.0;
 
     return BookModel(
@@ -57,19 +56,15 @@ class BookModel {
       synopsis: json['synopsis'] ?? '',
       tags: json['tags'] != null ? List<String>.from(json['tags']) : [],
       status: json['status'] ?? 'Ongoing',
-      progress: (json['progress'] != null) 
-          ? (json['progress'] as num).toDouble() 
+      progress: (json['progress'] != null)
+          ? (json['progress'] as num).toDouble()
           : calcProgress,
-      // Default gradient jika tidak disimpan di database
-      coverGradient: const [
-        Color(0xFF6A11CB),
-        Color(0xFF2575FC),
-      ],
+      coverGradient: const [Color(0xFF6A11CB), Color(0xFF2575FC)],
       coverIcon: Icons.menu_book_rounded,
+      coverAsset: json['cover_asset'] as String?,  // <-- tambah ini
     );
   }
 
-  /// Mengonversi instance BookModel menjadi Map JSON (untuk dikirim ke Supabase)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -83,10 +78,10 @@ class BookModel {
       'synopsis': synopsis,
       'tags': tags,
       'status': status,
+      'cover_asset': coverAsset,   // <-- tambah ini
     };
   }
 
-  /// Method copyWith untuk mempermudah update state di GetX
   BookModel copyWith({
     String? id,
     String? title,
@@ -102,6 +97,7 @@ class BookModel {
     double? progress,
     List<Color>? coverGradient,
     IconData? coverIcon,
+    String? coverAsset,    // <-- tambah ini
   }) {
     return BookModel(
       id: id ?? this.id,
@@ -118,6 +114,7 @@ class BookModel {
       progress: progress ?? this.progress,
       coverGradient: coverGradient ?? this.coverGradient,
       coverIcon: coverIcon ?? this.coverIcon,
+      coverAsset: coverAsset ?? this.coverAsset,  // <-- tambah ini
     );
   }
 }

@@ -10,9 +10,10 @@ class ProfilView extends GetView<ProfilController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // Jika belum login, tampilkan halaman login
+      // Halaman Profil tetap bisa dibuka tanpa login, tapi kontennya
+      // dibatasi hanya Pengaturan, Bantuan & Umpan Balik, dan Jadi Penulis.
       if (!controller.isLoggedIn) {
-        return _buildLoginScreen();
+        return _buildGuestScreen();
       }
       return _buildProfileScreen();
     });
@@ -31,8 +32,8 @@ class ProfilView extends GetView<ProfilController> {
             Row(
               children: [
                 const Spacer(),
-                const Text('Profil',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                Text('profile_title'.tr,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.settings_outlined),
@@ -123,13 +124,13 @@ class ProfilView extends GetView<ProfilController> {
                     ),
                     child: Row(
                       children: [
-                        _StatColumn(value: '${user.karyaDibaca}', label: 'Karya Dibaca'),
+                        _StatColumn(value: '${user.karyaDibaca}', label: 'profile_works_read'.tr),
                         _vDivider(),
-                        _StatColumn(value: '${user.koleksi}', label: 'Koleksi'),
+                        _StatColumn(value: '${user.koleksi}', label: 'profile_collection'.tr),
                         _vDivider(),
                         _StatColumn(
                             value: '${(user.pengikut / 1000).toStringAsFixed(1)}k',
-                            label: 'Pengikut'),
+                            label: 'profile_followers'.tr),
                       ],
                     ),
                   ),
@@ -148,7 +149,7 @@ class ProfilView extends GetView<ProfilController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isWriter ? 'Pusat Penulis' : 'Jadi Penulis',
+                    isWriter ? 'profile_writer_hub'.tr : 'profile_become_author'.tr,
                     style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -157,8 +158,8 @@ class ProfilView extends GetView<ProfilController> {
                   const SizedBox(height: 4),
                   Text(
                     isWriter
-                        ? 'Kelola dan terbitkan karya sastra Anda'
-                        : 'Mulai menulis dan bagikan karya sastra Anda',
+                        ? 'profile_writer_hub_desc'.tr
+                        : 'profile_become_author_desc'.tr,
                     style: TextStyle(
                         color: Colors.white.withOpacity(0.7), fontSize: 12),
                   ),
@@ -170,8 +171,8 @@ class ProfilView extends GetView<ProfilController> {
                     icon: Icon(isWriter ? Icons.add : Icons.edit, size: 18),
                     label: Text(
                       isWriter
-                          ? 'Tambah Karya Sastra Baru'
-                          : 'Daftar Sebagai Penulis',
+                          ? 'add_work_title'.tr
+                          : 'author_signup_title'.tr,
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accentBlue,
@@ -184,28 +185,28 @@ class ProfilView extends GetView<ProfilController> {
             const SizedBox(height: 20),
             _ProfileMenuTile(
               icon: Icons.settings_outlined,
-              label: 'Pengaturan Aplikasi',
+              label: 'profile_app_settings'.tr,
               onTap: controller.openSettings,
             ),
             // Statistik pembaca menu hanya untuk penulis
             if (isWriter)
               _ProfileMenuTile(
                 icon: Icons.bar_chart_rounded,
-                label: 'Statistik Pembaca',
+                label: 'profile_reader_stats'.tr,
                 onTap: controller.openStatistik,
               ),
             _ProfileMenuTile(
               icon: Icons.help_outline_rounded,
-              label: 'Pusat Bantuan',
-              onTap: () {},
+              label: 'profile_help_center'.tr,
+              onTap: controller.openHelp,
             ),
             const SizedBox(height: 12),
             Center(
               child: TextButton.icon(
                 onPressed: controller.logout,
                 icon: const Icon(Icons.logout_rounded, color: AppColors.danger, size: 18),
-                label: const Text('Keluar Akun',
-                    style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w600)),
+                label: Text('profile_logout'.tr,
+                    style: const TextStyle(color: AppColors.danger, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -214,94 +215,63 @@ class ProfilView extends GetView<ProfilController> {
     );
   }
 
-  // Widget untuk tampilan login/register
-  Widget _buildLoginScreen() {
+  // Tampilan Profil untuk guest (belum login): tetap bisa dibuka, hanya
+  // berisi CTA Masuk/Daftar + menu Pengaturan, Bantuan & Umpan Balik,
+  // dan Jadi Penulis (tanpa data akun/statistik).
+  Widget _buildGuestScreen() {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-              child: Row(
-                children: [
-                  const Spacer(),
-                  const Text('Profil',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                  const Spacer(),
-                  SizedBox(width: 48),
-                ],
-              ),
-            ),
-            const Spacer(),
-            // Icon atau ilustrasi
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.person_outline_rounded,
-                size: 64,
-                color: AppColors.primaryNavy,
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Masuk ke Akun Anda',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                'Nikmati pengalaman membaca dan menulis yang lebih personal',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
+            Text('profile_title'.tr,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: controller.goToLogin,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accentOrange,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('profile_login_register'.tr,
+                        style:
+                            const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                    const SizedBox(width: 6),
+                    const Icon(Icons.arrow_forward_rounded, size: 20),
+                  ],
                 ),
               ),
             ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              child: Column(
-                children: [
-                  ElevatedButton(
-                    onPressed: controller.goToLogin,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryNavy,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Masuk',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton(
-                    onPressed: controller.goToRegister,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primaryNavy,
-                      side: const BorderSide(color: AppColors.primaryNavy),
-                      minimumSize: const Size(double.infinity, 48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Daftar Akun Baru',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ],
-              ),
+            const SizedBox(height: 10),
+            Text(
+              'profile_login_prompt'.tr,
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            ),
+            const SizedBox(height: 28),
+            _ProfileMenuTile(
+              icon: Icons.settings_outlined,
+              label: 'profile_settings'.tr,
+              onTap: controller.openSettings,
+            ),
+            _ProfileMenuTile(
+              icon: Icons.headset_mic_outlined,
+              label: 'profile_help_feedback'.tr,
+              onTap: controller.openHelp,
+            ),
+            _ProfileMenuTile(
+              icon: Icons.edit_note_rounded,
+              label: 'profile_become_author'.tr,
+              onTap: controller.goToWriterRegistration,
             ),
           ],
         ),

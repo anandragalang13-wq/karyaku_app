@@ -47,7 +47,8 @@ class DetailBukuView extends GetView<DetailBukuController> {
                   ),
                   Container(color: Colors.black.withOpacity(0.15)),
                   Center(
-                    child: BookCover(
+                    child: BookCoverImage(
+                      coverAsset: book.coverAsset,
                       gradient: book.coverGradient,
                       icon: book.coverIcon,
                       width: 130,
@@ -78,7 +79,7 @@ class DetailBukuView extends GetView<DetailBukuController> {
                       style: TextStyle(
                           color: AppColors.textSecondary, fontSize: 13),
                       children: [
-                        const TextSpan(text: 'Oleh '),
+                        TextSpan(text: 'book_by'.tr),
                         TextSpan(
                           text: book.author,
                           style: const TextStyle(
@@ -105,7 +106,7 @@ class DetailBukuView extends GetView<DetailBukuController> {
                       Icon(Icons.menu_book_outlined,
                           size: 16, color: AppColors.textSecondary),
                       const SizedBox(width: 4),
-                      Text('${book.totalChapters} Bab',
+                      Text('${book.totalChapters} ${'book_chapters_suffix'.tr}',
                           style: TextStyle(
                               color: AppColors.textSecondary, fontSize: 13)),
                     ],
@@ -117,7 +118,8 @@ class DetailBukuView extends GetView<DetailBukuController> {
                     children: book.tags
                         .map(
                           (t) => Chip(
-                            label: Text(t, style: const TextStyle(fontSize: 12)),
+                            label:
+                                Text(t, style: const TextStyle(fontSize: 12)),
                             backgroundColor: t.toLowerCase().contains('cerpen')
                                 ? AppColors.accentBlue.withOpacity(0.12)
                                 : AppColors.border.withOpacity(0.6),
@@ -141,9 +143,9 @@ class DetailBukuView extends GetView<DetailBukuController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Sinopsis',
-                      style: TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.w700)),
+                  Text('book_synopsis'.tr,
+                      style:
+                          const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 8),
                   Obx(
                     () => Text(
@@ -163,8 +165,8 @@ class DetailBukuView extends GetView<DetailBukuController> {
                     child: Obx(
                       () => Text(
                         controller.isSynopsisExpanded.value
-                            ? 'Sembunyikan'
-                            : 'Selengkapnya',
+                            ? 'book_show_less'.tr
+                            : 'book_show_more'.tr,
                         style: const TextStyle(
                           color: AppColors.accentBlue,
                           fontWeight: FontWeight.w600,
@@ -188,11 +190,11 @@ class DetailBukuView extends GetView<DetailBukuController> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Ulasan & Komentar Cerita',
-                          style: TextStyle(
+                      Text('book_reviews'.tr,
+                          style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w700)),
-                      const Text('Lihat Semua',
-                          style: TextStyle(
+                      Text('see_all'.tr,
+                          style: const TextStyle(
                               color: AppColors.accentBlue,
                               fontSize: 13,
                               fontWeight: FontWeight.w600)),
@@ -209,9 +211,10 @@ class DetailBukuView extends GetView<DetailBukuController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           FullRatingStars(rating: book.rating, size: 18),
-                          Text('dari 5',
+                          Text('book_out_of_5'.tr,
                               style: TextStyle(
-                                  color: AppColors.textSecondary, fontSize: 12)),
+                                  color: AppColors.textSecondary,
+                                  fontSize: 12)),
                         ],
                       ),
                       const Spacer(),
@@ -223,7 +226,7 @@ class DetailBukuView extends GetView<DetailBukuController> {
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: const Text('Tulis Ulasan'),
+                        child: Text('book_write_review'.tr),
                       ),
                     ],
                   ),
@@ -266,7 +269,7 @@ class DetailBukuView extends GetView<DetailBukuController> {
                 child: ElevatedButton.icon(
                   onPressed: controller.startReading,
                   icon: const Icon(Icons.menu_book_rounded, size: 18),
-                  label: const Text('Mulai Baca'),
+                  label: Text('book_start_reading'.tr),
                 ),
               ),
             ],
@@ -281,7 +284,16 @@ class DetailBukuView extends GetView<DetailBukuController> {
         child: Text('•', style: TextStyle(color: AppColors.textMuted)),
       );
 
+  /// Alur ulasan:
+  /// - Sudah login  → form ulasan langsung terbuka, bisa langsung dikirim.
+  /// - Belum login  → form TIDAK dibuka, langsung diarahkan ke halaman
+  ///   masuk (lihat [DetailBukuController.promptLoginToReview]) supaya
+  ///   pengguna tidak perlu mengisi ulasan dulu baru gagal saat dikirim.
   void _showWriteReviewSheet(BuildContext context) {
+    if (!controller.isLoggedIn) {
+      controller.promptLoginToReview();
+      return;
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -346,8 +358,8 @@ class _WriteReviewSheetState extends State<_WriteReviewSheet> {
     if (success) {
       Navigator.of(context).pop();
       Get.snackbar(
-        'Ulasan Terkirim',
-        'Terima kasih atas ulasan Anda.',
+        'book_review_sent_title'.tr,
+        'book_review_sent_message'.tr,
         snackPosition: SnackPosition.BOTTOM,
       );
     }
@@ -380,8 +392,8 @@ class _WriteReviewSheetState extends State<_WriteReviewSheet> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Tulis Ulasan',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            Text('book_write_review'.tr,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
             const SizedBox(height: 16),
             Center(
               child: Row(
@@ -406,7 +418,7 @@ class _WriteReviewSheetState extends State<_WriteReviewSheet> {
               controller: _commentController,
               maxLines: 4,
               decoration: InputDecoration(
-                hintText: 'Bagikan pendapat Anda tentang karya ini...',
+                hintText: 'book_review_hint'.tr,
                 filled: true,
                 fillColor: AppColors.background,
                 border: OutlineInputBorder(
@@ -428,8 +440,8 @@ class _WriteReviewSheetState extends State<_WriteReviewSheet> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Kirim Ulasan',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
+                child: Text('book_send_review'.tr,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
               ),
             ),
           ],
@@ -466,8 +478,8 @@ class _ReviewTile extends StatelessWidget {
                 Row(
                   children: [
                     Text(review.name,
-                        style:
-                            const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 13)),
                     const Spacer(),
                     Text(review.timeAgo,
                         style: TextStyle(
@@ -489,10 +501,10 @@ class _ReviewTile extends StatelessWidget {
                         size: 14, color: AppColors.textMuted),
                     const SizedBox(width: 4),
                     Text('${review.likes}',
-                        style:
-                            TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                        style: TextStyle(
+                            color: AppColors.textMuted, fontSize: 12)),
                     const SizedBox(width: 16),
-                    Text('Balas',
+                    Text('reply'.tr,
                         style: TextStyle(
                             color: AppColors.textMuted,
                             fontSize: 12,

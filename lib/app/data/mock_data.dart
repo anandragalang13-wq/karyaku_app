@@ -75,8 +75,7 @@ class MockData {
       views: 187000,
       totalChapters: 12,
       currentChapter: 5,
-      synopsis:
-          'Kumpulan puisi kontemporer karya Luna Adriana, merefleksikan '
+      synopsis: 'Kumpulan puisi kontemporer karya Luna Adriana, merefleksikan '
           'jiwa yang bebas dan menolak tunduk pada keadaan.',
       tags: const ['Puisi', 'Kontemporer'],
       status: 'Ongoing',
@@ -123,25 +122,28 @@ class MockData {
   ];
 
   static final BookModel detailBook = BookModel(
-    id: 'senja-di-pelataran',
-    title: 'Senja di Pelataran',
-    author: 'Anwar Hidayat',
-    category: 'Cerpen',
-    rating: 4.7,
+    id: 'laut-bercerita-d',
+    title: 'Laut Bercerita',
+    author: 'Leila S. Chudori',
+    category: 'Novel',
+    rating: 4.9,
     views: 667000,
     totalChapters: 32,
     currentChapter: 12,
     synopsis:
-        'Di sebuah desa kecil di lereng Gunung Merapi, kehidupan berjalan '
-        'dengan tenang sampai sebuah surat dari masa lalu membuka luka lama '
-        'keluarga Suryo. Senja itu, pelataran rumah joglo menjadi saksi bisu '
-        'pertemuan yang telah lama dinanti, membawa kembali kenangan yang '
-        'selama ini terkubur dalam diam.',
-    tags: const ['Cerpen', 'Sastra', 'Keluarga'],
+        'Biru Laut, mahasiswa Sastra Inggris UGM, adalah seorang aktivis yang '
+        'gemar membaca sajak dan menerjemahkan karya sastra di sela-sela '
+        'gerakannya melawan rezim Orde Baru. Bersama kawan-kawannya di Kelompok '
+        'Winatra, ia menyusun aksi-aksi demonstrasi hingga akhirnya diculik dan '
+        'hilang tanpa jejak. Dua dekade kemudian, sang adik, Asmara Jati, masih '
+        'menyimpan kursi kosong di meja makan keluarga, menanti kepulangan yang '
+        'tak kunjung tiba, sembari berjuang mencari kebenaran di balik hilangnya '
+        'sang kakak dan kawan-kawan seperjuangannya.',
+    tags: const ['Novel', 'Sejarah', 'Sastra'],
     status: 'Ongoing',
     progress: 0.37,
-    coverGradient: const [Color(0xFF2B3A55), Color(0xFF0E1626)],
-    coverIcon: Icons.landscape_rounded,
+    coverGradient: const [Color(0xFF1F3A5F), Color(0xFF0B1526)],
+    coverAsset: 'assets/images/Laut_Bercerita.png'
   );
 
   static final List<ReviewModel> reviews = [
@@ -150,8 +152,7 @@ class MockData {
       avatarColor: Color(0xFF1D5FBF),
       rating: 5,
       timeAgo: '2 jam yang lalu',
-      comment:
-          'Sangat menyentuh! Gaya bahasanya puitis tapi mudah dipahami. '
+      comment: 'Sangat menyentuh! Gaya bahasanya puitis tapi mudah dipahami. '
           'Plot twist di akhir bab 5 benar-benar tidak terduga.',
       likes: 24,
     ),

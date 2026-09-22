@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../theme/app_colors.dart';
 
 /// Bottom navigation bar yang konsisten dipakai di seluruh halaman utama:
@@ -13,12 +14,12 @@ class MainBottomNav extends StatelessWidget {
     required this.onTap,
   });
 
-  static const _items = [
-    _NavItemData(icon: Icons.home_rounded, label: 'Beranda'),
-    _NavItemData(icon: Icons.history_rounded, label: 'Perpustakaan'),
-    _NavItemData(icon: Icons.explore_outlined, label: 'Temukan'),
-    _NavItemData(icon: Icons.person_outline_rounded, label: 'Profil'),
-  ];
+  static List<_NavItemData> get _items => [
+        _NavItemData(icon: Icons.home_rounded, label: 'nav_home'.tr),
+        _NavItemData(icon: Icons.history_rounded, label: 'nav_library'.tr),
+        _NavItemData(icon: Icons.explore_outlined, label: 'nav_discover'.tr),
+        _NavItemData(icon: Icons.person_outline_rounded, label: 'nav_profile'.tr),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -69,5 +70,5 @@ class MainBottomNav extends StatelessWidget {
 class _NavItemData {
   final IconData icon;
   final String label;
-  const _NavItemData({required this.icon, required this.label});
+  _NavItemData({required this.icon, required this.label});
 }
