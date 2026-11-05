@@ -169,7 +169,8 @@ class _SearchResultTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          BookCover(
+          BookCoverImage(
+            coverAsset: book.coverAsset,
             gradient: book.coverGradient,
             icon: book.coverIcon,
             width: 64,

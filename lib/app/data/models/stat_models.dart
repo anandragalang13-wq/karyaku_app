@@ -19,6 +19,10 @@ class PopularWorkStat {
   final String category;
   final String views;
   final String delta;
+
+  /// Foto cover buku dari folder `assets/images/`.
+  final String cover;
+
   final List<Color> coverGradient;
 
   const PopularWorkStat({
@@ -26,6 +30,7 @@ class PopularWorkStat {
     required this.category,
     required this.views,
     required this.delta,
+    required this.cover,
     required this.coverGradient,
   });
 }

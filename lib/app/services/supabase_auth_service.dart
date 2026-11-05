@@ -22,6 +22,9 @@ class SupabaseAuthService extends GetxService {
     unawaited(_checkUserSession());
   }
 
+  /// Sinkronkan state login dengan sesi Supabase (dipanggil setelah register).
+  Future<void> refreshSession() => _checkUserSession();
+
   // ============================================================
   // CEK SESSION
   // ============================================================
@@ -156,7 +159,7 @@ class SupabaseAuthService extends GetxService {
         koleksi: response['koleksi'] ?? 0,
         pengikut: response['followers_count'] ?? 0,
         isWriter: response['is_writer'] ?? false,
-        penName: response['pen_name'],
+        penName: response['pen_name']?.toString() ?? '',
         favoriteGenres:
             List<String>.from(response['favorite_genres'] ?? []),
       );

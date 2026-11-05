@@ -1,37 +1,38 @@
 import 'package:flutter/material.dart';
+
 import 'book_model.dart';
 
 extension BookModelExtension on BookModel {
-  // Factory constructor untuk convert JSON dari Supabase ke BookModel
+  // Factory untuk convert JSON dari Supabase (tabel `books`) ke BookModel
   static BookModel fromJson(Map<String, dynamic> json) {
-    // Generate gradient berdasarkan category
     final category = json['category'] as String? ?? 'Novel';
-    final gradient = _getGradientByCategory(category);
-    
-    // Generate icon berdasarkan category
-    final icon = _getIconByCategory(category);
+    final totalChapters = (json['total_chapters'] as num?)?.toInt() ?? 0;
+    final currentChapter = (json['current_chapter'] as num?)?.toInt() ?? 0;
+    final progress = totalChapters > 0
+        ? (currentChapter / totalChapters).clamp(0.0, 1.0).toDouble()
+        : 0.0;
 
     return BookModel(
-      id: json['id'] as String? ?? '',
+      id: json['id']?.toString() ?? '',
       title: json['title'] as String? ?? 'No Title',
       author: json['author'] as String? ?? 'Unknown',
       category: category,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-      views: json['views_count'] as int? ?? 0,
-      totalChapters: json['total_chapters'] as int? ?? 0,
-      currentChapter: json['current_chapter'] as int? ?? 0,
+      views: (json['views_count'] as num?)?.toInt() ?? 0,
+      totalChapters: totalChapters,
+      currentChapter: currentChapter,
       synopsis: json['synopsis'] as String? ?? '',
       tags: List<String>.from(json['tags'] as List? ?? []),
       status: json['status'] as String? ?? 'Ongoing',
-      progress: ((json['current_chapter'] as int? ?? 0) / 
-                 (json['total_chapters'] as int? ?? 1))
-          .clamp(0.0, 1.0),
-      coverGradient: gradient,
-      coverIcon: icon,
+      progress: progress,
+      coverGradient: _getGradientByCategory(category),
+      coverIcon: _getIconByCategory(category),
+      // Cover dari database; kalau kosong, BookModel.coverAsset otomatis
+      // mengisi dengan foto dari folder assets berdasarkan judul.
+      coverAsset: json['cover_asset'] as String?,
     );
   }
 
-  // Helper: Generate gradient berdasarkan category
   static List<Color> _getGradientByCategory(String category) {
     switch (category.toLowerCase()) {
       case 'novel':
@@ -49,7 +50,7 @@ extension BookModelExtension on BookModel {
     }
   }
 
-  // Helper: Generate icon berdasarkan category
+  
   static IconData _getIconByCategory(String category) {
     switch (category.toLowerCase()) {
       case 'novel':

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'book_covers.dart';
 import 'models/book_model.dart';
 import 'models/review_model.dart';
 import 'models/user_model.dart';
@@ -386,6 +387,7 @@ class MockData {
       category: 'Novel',
       views: '245k Pembaca',
       delta: '+5.2k',
+      cover: BookCovers.lautBercerita,
       coverGradient: [Color(0xFF1F3A5F), Color(0xFF0B1526)],
     ),
     PopularWorkStat(
@@ -393,6 +395,7 @@ class MockData {
       category: 'Puisi',
       views: '182k Pembaca',
       delta: '+2.1k',
+      cover: BookCovers.senjaDiPelantara,
       coverGradient: [Color(0xFFE0703F), Color(0xFF7A2E14)],
     ),
     PopularWorkStat(
@@ -400,6 +403,7 @@ class MockData {
       category: 'Cerpen',
       views: '96k Pembaca',
       delta: '+1.4k',
+      cover: BookCovers.filosofiKopi,
       coverGradient: [Color(0xFF223447), Color(0xFF0D1620)],
     ),
   ];

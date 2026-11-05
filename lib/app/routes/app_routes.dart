@@ -5,7 +5,9 @@ abstract class Routes {
   static const MAIN = '/main';
   static const DETAIL_BUKU = '/detail-buku';
   static const PENGATURAN_AKUN = '/pengaturan-akun';
-  static const STATISTIK = '/statistik';
+  static const KELOLA_KARYA = '/kelola-karya';
+  static const PROGRES_CERITA = '/progres-cerita';
+  static const TULIS_BAB = '/tulis-bab';
   static const READER = '/reader';
   static const LOGIN = '/login';
   static const REGISTER = '/register';

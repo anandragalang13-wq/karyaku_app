@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart' as image_picker;
 
 import '../../../data/models/work_model.dart';
+import '../../../services/auth_service.dart';
+import '../../../services/book_service.dart';
 
 class TambahKaryaController extends GetxController {
   // Form Controllers
@@ -21,6 +23,7 @@ class TambahKaryaController extends GetxController {
   // Cover
   final coverImageLabel = ''.obs;
   final _coverImagePath = Rx<String?>(null);
+  image_picker.XFile? _coverFile;
 
   // UI State
   final isSavingDraft = false.obs;
@@ -76,6 +79,7 @@ class TambahKaryaController extends GetxController {
 
       if (image != null) {
         _coverImagePath.value = image.path;
+        _coverFile = image;
         coverImageLabel.value = image.name;
       }
     } catch (e) {
@@ -119,6 +123,30 @@ class TambahKaryaController extends GetxController {
     selectedCategoryIndex.value = 0;
     coverImageLabel.value = '';
     _coverImagePath.value = null;
+    _coverFile = null;
+  }
+
+  /// Menyimpan karya ke Supabase. `submit: false` = draft, `true` = pending.
+  Future<void> _saveToDatabase({required bool submit}) async {
+    if (!AuthService.to.isLoggedIn.value) {
+      throw Exception('Silakan masuk terlebih dahulu.');
+    }
+    final service = Get.find<BookService>();
+
+    String? coverUrl;
+    if (_coverFile != null && selectedType.needsCover) {
+      coverUrl = await service.uploadCover(_coverFile!);
+    }
+
+    await service.saveWork(
+      title: judulController.text.trim(),
+      category: selectedType.label,
+      content: isiCeritaController.text.trim(),
+      synopsis: sinopsisController.text,
+      tags: tags.toList(),
+      coverUrl: coverUrl,
+      submit: submit,
+    );
   }
 
   Future<void> saveDraft() async {
@@ -126,7 +154,7 @@ class TambahKaryaController extends GetxController {
 
     isSavingDraft.value = true;
     try {
-      // TODO: Simpan sebagai draft (ApprovalStatus.draft) ke database
+      await _saveToDatabase(submit: false);
       Get.snackbar(
         'Berhasil',
         'Karya disimpan sebagai draft',
@@ -176,7 +204,7 @@ class TambahKaryaController extends GetxController {
 
     isPublishing.value = true;
     try {
-      // TODO: Submit ke database dengan status ApprovalStatus.pending
+      await _saveToDatabase(submit: true);
       Get.snackbar(
         'Berhasil Dikirim',
         'Karya Anda sedang menunggu persetujuan admin.',
@@ -185,7 +213,6 @@ class TambahKaryaController extends GetxController {
         duration: const Duration(seconds: 3),
       );
 
-      await Future.delayed(const Duration(seconds: 1));
       _resetForm();
       Get.back();
     } catch (e) {

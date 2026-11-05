@@ -2,7 +2,7 @@
 
 Implementasi Flutter dari 9 desain UI KARYAKU (Beranda, Detail Buku, Histori
 Baca, Koleksi Saya, Pencarian, Pengaturan Akun, Pengaturan Buku/Reader, Profil,
-dan Statistik Pembaca), disusun dengan pola **GetX** (Controller — View —
+dan Kelola Karya), disusun dengan pola **GetX** (Controller — View —
 Binding + Route Management).
 
 ## Struktur Proyek
@@ -30,7 +30,8 @@ lib/
       pengaturan_akun/            # Layar "Pengaturan & Akun"
       reader/                     # Layar baca + bottom sheet "Pengaturan Buku"
       profil/                     # Layar "Profil"
-      statistik/                  # Layar "Statistik Karya & Pembaca" (fl_chart)
+      kelola_karya/               # Layar "Kelola Karya": draft + statistik buku (fl_chart)
+      tulis_bab/                  # Layar "Tulis Bab Baru" (lanjutan cerita draft)
       tambah_karya                # Layar 
 ```
 
@@ -44,8 +45,8 @@ Setiap modul GetX terdiri dari 3 file:
 - 4 tab utama (Histori, Temukan, Beranda, Profil) dikelola oleh
   `MainNavController` dengan `IndexedStack`, sehingga state tiap tab
   tetap terjaga saat berpindah tab.
-- Halaman lain (Detail Buku, Pengaturan Akun, Statistik, Reader) memakai
-  named routes (`Get.toNamed`) dan menerima data lewat `Get.arguments`.
+- Halaman lain (Detail Buku, Pengaturan Akun, Kelola Karya, Tulis Bab, Reader)
+  memakai named routes (`Get.toNamed`) dan menerima data lewat `Get.arguments`.
 
 ## Cara Menjalankan
 
@@ -72,7 +73,7 @@ flutter run
 ## Dependensi
 
 - `get` — state management, dependency injection, dan routing
-- `fl_chart` — grafik batang "Tren Pembaca Harian" di halaman Statistik
+- `fl_chart` — grafik batang "Pembaca per Karya" di halaman Kelola Karya
 - `google_fonts` — font Inter (default UI) dan Merriweather/Noto Serif untuk mode baca
 
 ## Catatan
@@ -82,3 +83,15 @@ flutter run
 - Semua data (buku, ulasan, statistik, dsb.) berasal dari `mock_data.dart`
   sebagai simulasi API/backend — silakan ganti dengan pemanggilan service/
   repository sungguhan sesuai kebutuhan.
+- Preferensi tampilan baca (warna background, jenis huruf, ukuran font)
+  disimpan di perangkat lewat `ReadingPrefsService` (SharedPreferences) dan
+  dipakai bersama oleh halaman **Pengaturan & Akun** serta panel
+  **Pengaturan Buku** di Reader, sehingga pilihannya tidak hilang saat
+  aplikasi dibuka kembali.
+- Halaman **Kelola Karya** (pengganti Statistik) mengambil karya milik penulis
+  langsung dari Supabase (`BookService.getMyWorks`) berikut jumlah ulasannya.
+  Bab baru yang ditulis lewat layar **Tulis Bab Baru** disimpan sebagai blok
+  dalam kolom `books.content` dengan penanda `[[BAB]]`
+  (`lib/app/data/chapter_content.dart`), jadi tidak perlu migrasi skema;
+  penulis hanya bisa menambah bab selama status karya masih draft/ditolak
+  (dibatasi RLS di `supabase/schema.sql`).

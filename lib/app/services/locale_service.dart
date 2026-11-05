@@ -24,25 +24,38 @@ enum AppLanguage {
 
 /// Service yang menyimpan & menerapkan bahasa aplikasi secara global.
 class LocaleService extends GetxService {
-  static const _prefKey = 'app_language_code';
+  /// Key SharedPreferences tempat pilihan bahasa disimpan.
+  static const prefKey = 'app_language_code';
 
   final Rx<AppLanguage> currentLanguage = AppLanguage.indonesian.obs;
 
+  /// Muat bahasa terakhir yang dipilih user. Dipanggil sekali di [main]
+  /// sebelum aplikasi ditampilkan supaya bahasa tidak berubah-ubah saat
+  /// halaman pertama dibuka.
   Future<LocaleService> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedCode = prefs.getString(_prefKey);
-    currentLanguage.value = AppLanguage.fromCode(savedCode);
+    currentLanguage.value = AppLanguage.fromCode(prefs.getString(prefKey));
+    Get.locale = currentLanguage.value.locale;
     return this;
   }
 
-  /// Ganti bahasa aplikasi dan langsung terapkan ke seluruh halaman.
+  /// Ganti bahasa aplikasi, terapkan ke seluruh halaman, lalu simpan
+  /// pilihannya agar tetap dipakai saat aplikasi dibuka kembali.
   Future<void> changeLanguage(AppLanguage language) async {
     if (currentLanguage.value == language) return;
 
     currentLanguage.value = language;
-    Get.updateLocale(language.locale);
 
+    // Simpan lebih dulu supaya pilihan tidak hilang jika aplikasi langsung
+    // ditutup tepat setelah user mengganti bahasa.
+    await saveLanguage(language);
+
+    await Get.updateLocale(language.locale);
+  }
+
+  /// Menyimpan pilihan bahasa ke penyimpanan lokal.
+  Future<void> saveLanguage(AppLanguage language) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_prefKey, language.code);
+    await prefs.setString(prefKey, language.code);
   }
 }

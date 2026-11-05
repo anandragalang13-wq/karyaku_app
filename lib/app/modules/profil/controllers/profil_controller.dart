@@ -26,7 +26,7 @@ class ProfilController extends GetxController {
 
   /// Pengaturan & Bantuan bisa diakses tanpa login.
   void openSettings() => Get.toNamed(Routes.PENGATURAN_AKUN);
-  void openStatistik() => Get.toNamed(Routes.STATISTIK);
+  void openKelolaKarya() => Get.toNamed(Routes.KELOLA_KARYA);
 
   void openHelp() {
     Get.defaultDialog(

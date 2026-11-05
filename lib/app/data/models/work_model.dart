@@ -71,6 +71,7 @@ enum WorkType {
 class WorkModel {
   final String id;
   final String authorId;
+  final String? authorName; // nama tampilan penulis (dari kolom `author`)
   final String title;
   final WorkType type; // Novel, Puisi, Cerpen
   final String? cover; // URL cover image (nullable untuk puisi)
@@ -89,6 +90,7 @@ class WorkModel {
   WorkModel({
     required this.id,
     required this.authorId,
+    this.authorName,
     required this.title,
     required this.type,
     this.cover,

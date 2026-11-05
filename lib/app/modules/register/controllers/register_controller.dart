@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../routes/app_routes.dart';
+import '../../../services/auth_service.dart';
 
 /// Controller halaman Daftar (Register) akun baru KARYAKU.
 class RegisterController extends GetxController {
@@ -103,6 +104,11 @@ class RegisterController extends GetxController {
           'Silakan cek email untuk melakukan verifikasi.',
           snackPosition: SnackPosition.BOTTOM,
         );
+      }
+
+      // Sinkronkan status login & profil supaya langsung terbaca di app.
+      if (response.session != null) {
+        await AuthService.to.refreshSession();
       }
 
       Get.offAllNamed(Routes.MAIN);

@@ -188,12 +188,12 @@ class ProfilView extends GetView<ProfilController> {
               label: 'profile_app_settings'.tr,
               onTap: controller.openSettings,
             ),
-            // Statistik pembaca menu hanya untuk penulis
+            // Menu Kelola Karya (draft + statistik buku) hanya untuk penulis
             if (isWriter)
               _ProfileMenuTile(
-                icon: Icons.bar_chart_rounded,
-                label: 'profile_reader_stats'.tr,
-                onTap: controller.openStatistik,
+                icon: Icons.auto_stories_rounded,
+                label: 'profile_manage_works'.tr,
+                onTap: controller.openKelolaKarya,
               ),
             _ProfileMenuTile(
               icon: Icons.help_outline_rounded,

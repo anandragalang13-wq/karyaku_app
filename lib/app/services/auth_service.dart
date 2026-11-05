@@ -29,6 +29,8 @@ class AuthService extends GetxService {
 
   Future<void> logout() => _supabaseAuth.logout();
 
+  Future<void> refreshSession() => _supabaseAuth.refreshSession();
+
   Future<void> becomeWriter({
     required String penName,
     List<String> favoriteGenres = const [],

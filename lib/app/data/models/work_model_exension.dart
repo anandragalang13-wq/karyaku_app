@@ -17,6 +17,8 @@ extension WorkModelToBookModel on WorkModel {
   };
 
   String get _authorDisplayName {
+    final name = authorName?.trim();
+    if (name != null && name.isNotEmpty) return name;
     final known = _authorNames[authorId];
     if (known != null) return known;
     // authorId sudah berupa nama lengkap, mis. "Sapardi Djoko Damono"
@@ -73,7 +75,9 @@ extension WorkModelToBookModel on WorkModel {
       tags: tags,
       status: 'Ongoing',
       progress: 0.0,
-      coverAsset: cover,                        // <-- tambah ini
+      // Kalau cover kosong, BookModel.coverAsset otomatis memakai foto
+      // dari folder assets berdasarkan judul.
+      coverAsset: cover,
       coverGradient: _gradientForCategory(category),
       coverIcon: _iconForCategory(category),
     );

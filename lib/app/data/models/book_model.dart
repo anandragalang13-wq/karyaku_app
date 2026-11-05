@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import '../book_covers.dart';
+
 class BookModel {
   final String id;
   final String title;
@@ -16,7 +18,7 @@ class BookModel {
   final double progress;
   final List<Color> coverGradient;
   final IconData coverIcon;
-  final String? coverAsset;   // <-- tambah ini
+  final String? _coverAsset;   // <-- tambah ini
 
   const BookModel({
     required this.id,
@@ -33,8 +35,13 @@ class BookModel {
     this.progress = 0.0,
     required this.coverGradient,
     this.coverIcon = Icons.menu_book_rounded,
-    this.coverAsset,          // <-- tambah ini
-  });
+    String? coverAsset,          // <-- tambah ini
+  }) : _coverAsset = coverAsset;
+
+  /// Cover buku. Kalau data aslinya kosong, otomatis mengambil foto dari
+  /// folder `assets/images/` berdasarkan judul, jadi setiap buku yang
+  /// tampil di aplikasi selalu punya cover foto.
+  String? get coverAsset => BookCovers.resolve(cover: _coverAsset, title: title);
 
   String get progressLabel => '${(progress * 100).round()}%';
   String get chapterLabel => 'Bab $currentChapter/$totalChapters';
@@ -43,10 +50,11 @@ class BookModel {
     final int totalCh = json['total_chapters'] ?? 0;
     final int currentCh = json['current_chapter'] ?? 0;
     final double calcProgress = totalCh > 0 ? (currentCh / totalCh) : 0.0;
+    final String title = json['title'] ?? '';
 
     return BookModel(
       id: json['id']?.toString() ?? '',
-      title: json['title'] ?? '',
+      title: title,
       author: json['author'] ?? '',
       category: json['category'] ?? 'Novel',
       rating: (json['rating'] != null) ? (json['rating'] as num).toDouble() : 0.0,

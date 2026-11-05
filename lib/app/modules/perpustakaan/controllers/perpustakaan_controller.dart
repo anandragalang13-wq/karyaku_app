@@ -1,26 +1,47 @@
 import 'package:get/get.dart';
 
-import '../../../data/mock_works_data.dart';
 import '../../../data/models/book_model.dart';
 import '../../../routes/app_routes.dart';
+import '../../../services/book_service.dart';
 
 /// Controller gabungan untuk halaman Histori Baca & Koleksi Saya,
 /// yang di desain berbagi tab bar & filter kategori yang sama.
+///
+/// CATATAN: tabel histori baca & koleksi per-user belum ada di database,
+/// jadi kedua tab sementara menampilkan karya approved dari Supabase
+/// (sama seperti perilaku data mock sebelumnya).
 class PerpustakaanController extends GetxController {
   final RxInt tabIndex = 0.obs; // 0 = Histori, 1 = Koleksi
   final RxInt categoryIndex = 0.obs; // 0=Semua,1=Novel,2=Puisi,3=Cerpen
 
   final categories = const ['Semua', 'Novel', 'Puisi', 'Cerpen'];
 
-  // Sumber buku disamakan dengan yang tampil di Beranda (karya approved).
-  final List<BookModel> _history = MockWorksData.getApprovedWorksAsBooks();
-  final List<BookModel> _collection = MockWorksData.getApprovedWorksAsBooks();
+  final RxList<BookModel> _history = <BookModel>[].obs;
+  final RxList<BookModel> _collection = <BookModel>[].obs;
+  final RxBool isLoading = false.obs;
 
   List<BookModel> get filteredHistory => _filter(_history);
   List<BookModel> get filteredCollection => _filter(_collection);
 
+  @override
+  void onInit() {
+    super.onInit();
+    loadLibrary();
+  }
+
+  Future<void> loadLibrary() async {
+    isLoading.value = true;
+    try {
+      final books = await Get.find<BookService>().getAllBooks();
+      _history.assignAll(books);
+      _collection.assignAll(books);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   List<BookModel> _filter(List<BookModel> source) {
-    if (categoryIndex.value == 0) return source;
+    if (categoryIndex.value == 0) return source.toList();
     final cat = categories[categoryIndex.value];
     return source.where((b) => b.category == cat).toList();
   }

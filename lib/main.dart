@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -8,6 +9,7 @@ import 'app/routes/app_routes.dart';
 import 'app/services/auth_service.dart';
 import 'app/services/book_service.dart';
 import 'app/services/locale_service.dart';
+import 'app/services/reading_prefs_service.dart';
 import 'app/services/supabase_auth_service.dart';
 import 'app/theme/app_theme.dart';
 import 'app/translations/app_translations.dart';
@@ -31,6 +33,14 @@ void main() async {
     permanent: true,
   );
 
+  // Preferensi baca (warna background, jenis huruf, ukuran font) juga
+  // dimuat sekali di awal supaya Reader & Pengaturan langsung memakai
+  // pilihan terakhir user.
+  await Get.putAsync<ReadingPrefsService>(
+    () => ReadingPrefsService().init(),
+    permanent: true,
+  );
+
   runApp(KaryakuApp(initialLocale: localeService.currentLanguage.value.locale));
 }
 
@@ -38,7 +48,10 @@ void main() async {
 class KaryakuApp extends StatelessWidget {
   final Locale initialLocale;
 
-  const KaryakuApp({super.key, required this.initialLocale});
+  const KaryakuApp({
+    super.key,
+    this.initialLocale = const Locale('id', 'ID'),
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +63,14 @@ class KaryakuApp extends StatelessWidget {
       getPages: AppPages.pages,
       translations: AppTranslations(),
       locale: initialLocale,
-      fallbackLocale: const Locale('id', 'ID'),
+      fallbackLocale: AppLanguage.indonesian.locale,
+      supportedLocales:
+          AppLanguage.values.map((language) => language.locale).toList(),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
     );
   }
 }

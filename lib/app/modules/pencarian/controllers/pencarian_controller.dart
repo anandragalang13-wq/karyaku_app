@@ -1,16 +1,17 @@
 import 'package:get/get.dart';
 
-import '../../../data/mock_works_data.dart';
 import '../../../data/models/book_model.dart';
 import '../../../routes/app_routes.dart';
+import '../../../services/book_service.dart';
 
 enum SortBy { terpopuler, terbaru, ratingTertinggi }
 
 /// Controller halaman Pencarian (Temukan): kata kunci pencarian dan
 /// filter & pengurutan lewat bottom sheet "Filter & Urutkan".
 class PencarianController extends GetxController {
-  // Sumber buku disamakan dengan yang tampil di Beranda (karya approved).
-  final List<BookModel> _allResults = MockWorksData.getApprovedWorksAsBooks();
+  // Sumber buku: karya approved dari Supabase (urut terbaru dari server).
+  final RxList<BookModel> _allResults = <BookModel>[].obs;
+  final RxBool isLoading = false.obs;
 
   // State filter (nilai sementara di bottom sheet, diterapkan saat "Terapkan Filter")
   final RxInt filterCategoryIndex = 0.obs; // 0 Semua,1 Cerpen,2 Puisi,3 Novel
@@ -21,6 +22,21 @@ class PencarianController extends GetxController {
   final categories = const ['Semua', 'Cerpen', 'Puisi', 'Novel'];
 
   final RxString searchText = ''.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadBooks();
+  }
+
+  Future<void> loadBooks() async {
+    isLoading.value = true;
+    try {
+      _allResults.assignAll(await Get.find<BookService>().getAllBooks());
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
   List<BookModel> get results {
     var list = _allResults.where((b) {
@@ -40,7 +56,7 @@ class PencarianController extends GetxController {
         list.sort((a, b) => b.views.compareTo(a.views));
         break;
       case SortBy.terbaru:
-        break; // urutan asli dianggap terbaru pada data mock
+        break; // urutan dari server: created_at terbaru dulu
       case SortBy.ratingTertinggi:
         list.sort((a, b) => b.rating.compareTo(a.rating));
         break;

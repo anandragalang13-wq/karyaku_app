@@ -30,7 +30,19 @@ class BookCoverImage extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget imageWidget;
 
-    if (coverAsset != null && coverAsset!.isNotEmpty) {
+    final isRemote = coverAsset != null &&
+        (coverAsset!.startsWith('http://') || coverAsset!.startsWith('https://'));
+
+    if (isRemote) {
+      // Cover dari Supabase Storage tersimpan sebagai URL di kolom cover_asset.
+      imageWidget = Image.network(
+        coverAsset!,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _placeholder(),
+      );
+    } else if (coverAsset != null && coverAsset!.isNotEmpty) {
       imageWidget = Image.asset(
         coverAsset!,
         width: width,

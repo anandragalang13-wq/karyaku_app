@@ -1,24 +1,33 @@
 import 'package:get/get.dart';
 import '../../../services/locale_service.dart';
+import '../../../services/reading_prefs_service.dart';
 import '../../../theme/app_theme.dart';
 
 /// Controller halaman Pengaturan & Akun.
 class PengaturanAkunController extends GetxController {
   final RxBool notifEnabled = true.obs;
   final RxBool wifiOnlyDownload = false.obs;
-  final Rx<ReaderTheme> selectedTheme = ReaderTheme.light.obs;
-  final RxDouble fontSize = 16.0.obs;
   final String cacheSize = '45 MB';
 
   final LocaleService _localeService = Get.find<LocaleService>();
+  final ReadingPrefsService _readingPrefs = Get.find<ReadingPrefsService>();
 
   /// Bahasa yang sedang aktif, dipakai dropdown di halaman Pengaturan.
   Rx<AppLanguage> get selectedLanguage => _localeService.currentLanguage;
 
+  /// Warna background & ukuran font baca: menunjuk ke preferensi yang sama
+  /// dengan panel Pengaturan Buku di Reader, dan tersimpan di perangkat.
+  Rx<ReaderTheme> get selectedTheme => _readingPrefs.theme;
+  RxDouble get fontSize => _readingPrefs.fontSize;
+
   void toggleNotif(bool v) => notifEnabled.value = v;
   void toggleWifiOnly(bool v) => wifiOnlyDownload.value = v;
-  void selectTheme(ReaderTheme t) => selectedTheme.value = t;
-  void changeFontSize(double v) => fontSize.value = v;
+
+  /// Ganti warna background halaman baca (langsung disimpan).
+  void selectTheme(ReaderTheme t) => _readingPrefs.setTheme(t);
+
+  /// Ganti ukuran font halaman baca (langsung disimpan).
+  void changeFontSize(double v) => _readingPrefs.setFontSize(v);
 
   /// Mengubah bahasa aplikasi. Perubahan langsung berlaku di seluruh
   /// halaman (lewat Get.updateLocale) dan disimpan untuk sesi berikutnya.

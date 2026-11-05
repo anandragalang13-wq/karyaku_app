@@ -30,7 +30,7 @@ class UserModel {
     List<String>? favoriteGenres,
   }) =>
       UserModel(
-        id: id ?? this.id,
+        id: id,
         name: name,
         email: email,
         badge: badge,

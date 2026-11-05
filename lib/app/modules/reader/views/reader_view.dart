@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../services/locale_service.dart';
+import '../../../services/reading_prefs_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart' as app_theme;
 import '../controllers/reader_controller.dart';
@@ -12,52 +13,148 @@ class ReaderView extends GetView<ReaderController> {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => Scaffold(
-        backgroundColor: controller.theme.value.background,
-        appBar: AppBar(
-          backgroundColor: controller.theme.value.background,
-          elevation: 0,
-          foregroundColor: controller.theme.value.textColor,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Get.back(),
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.text_fields_rounded),
-              onPressed: () => _openReaderSettings(context),
+      () {
+        final chapter = controller.currentChapter;
+        final colors = controller.theme.value;
+
+        return Scaffold(
+          backgroundColor: colors.background,
+          appBar: AppBar(
+            backgroundColor: colors.background,
+            elevation: 0,
+            foregroundColor: colors.textColor,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Get.back(),
             ),
-          ],
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Judul bab: "Bab {nomor} {judul}" — ditampilkan di badan
-              // halaman (bukan di app bar), tebal & miring seperti reader
-              // pada umumnya.
-              Text(
-                'Bab ${ReaderController.sampleChapterNumber} ${ReaderController.sampleChapterTitle}',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  fontStyle: FontStyle.italic,
-                  height: 1.3,
-                  color: controller.theme.value.textColor,
-                ),
+            actions: [
+              // Daftar isi: pilih bab langsung dari daftar 5 bab.
+              IconButton(
+                icon: const Icon(Icons.menu_book_rounded),
+                onPressed: () => _openChapterList(context),
               ),
-              const SizedBox(height: 24),
-              Text(
-                ReaderController.sampleChapterText,
-                style: controller.font.value.textStyle(
-                  fontSize: controller.fontSize.value,
-                  color: controller.theme.value.textColor,
-                ),
+              IconButton(
+                icon: const Icon(Icons.text_fields_rounded),
+                onPressed: () => _openReaderSettings(context),
               ),
             ],
           ),
+          body: SingleChildScrollView(
+            controller: controller.scrollController,
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Judul bab: "Bab {nomor} {judul}" — ditampilkan di badan
+                // halaman (bukan di app bar), tebal & miring seperti reader
+                // pada umumnya.
+                Text(
+                  '${'reader_chapter_label'.tr} ${chapter.number} ${chapter.title}',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    fontStyle: FontStyle.italic,
+                    height: 1.3,
+                    color: colors.textColor,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  chapter.content,
+                  style: controller.font.value.textStyle(
+                    fontSize: controller.fontSize.value,
+                    color: colors.textColor,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                _ChapterNavigation(controller: controller),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Daftar isi novel: 5 bab, bab yang sedang dibaca ditandai.
+  void _openChapterList(BuildContext context) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
+        child: Obx(
+          () {
+            final selected = controller.currentChapterIndex.value;
+            final chapters = controller.chapters;
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: AppColors.border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Text(
+                  'reader_chapter_list'.tr,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                for (var i = 0; i < chapters.length; i++)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    leading: Icon(
+                      i == selected
+                          ? Icons.radio_button_checked_rounded
+                          : Icons.radio_button_off_rounded,
+                      color: AppColors.primaryNavy,
+                    ),
+                    title: Text(
+                      '${'reader_chapter_label'.tr} ${chapters[i].number} '
+                      '${chapters[i].title}',
+                      style: TextStyle(
+                        fontWeight:
+                            i == selected ? FontWeight.w700 : FontWeight.w500,
+                        fontSize: 14,
+                      ),
+                    ),
+                    subtitle: Text(
+                      chapters[i].content,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                      ),
+                    ),
+                    onTap: () {
+                      controller.goToChapter(i);
+                      Get.back();
+                    },
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
     );
   }
@@ -276,9 +373,11 @@ class _ReaderSettingsSheet extends GetView<ReaderController> {
                 Expanded(
                   child: Slider(
                     value: controller.fontSize.value,
-                    min: 13,
-                    max: 26,
-                    divisions: 13,
+                    min: ReadingPrefsService.minFontSize,
+                    max: ReadingPrefsService.maxFontSize,
+                    divisions: (ReadingPrefsService.maxFontSize -
+                            ReadingPrefsService.minFontSize)
+                        .round(),
                     activeColor: AppColors.primaryNavy,
                     onChanged: controller.setFontSize,
                   ),
@@ -331,5 +430,77 @@ class _LanguageChip extends StatelessWidget {
         ),
       );
     });
+  }
+}
+
+// Navigasi antar bab: Sebelumnya — "Bab X dari 5" — Berikutnya.
+// Tombol dinonaktifkan otomatis di bab pertama/terakhir.
+class _ChapterNavigation extends StatelessWidget {
+  final ReaderController controller;
+
+  const _ChapterNavigation({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPrev = controller.hasPreviousChapter;
+    final hasNext = controller.hasNextChapter;
+    final current = controller.currentChapterIndex.value + 1;
+    final total = controller.chapters.length;
+    final textColor = controller.theme.value.textColor;
+
+    final enabledStyle = TextStyle(
+      color: textColor,
+      fontWeight: FontWeight.w600,
+      fontSize: 13,
+    );
+    const disabledStyle = TextStyle(
+      color: AppColors.textMuted,
+      fontWeight: FontWeight.w600,
+      fontSize: 13,
+    );
+
+    return Column(
+      children: [
+        const Divider(height: 1, color: AppColors.border),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextButton.icon(
+              onPressed: hasPrev ? controller.previousChapter : null,
+              icon: Icon(
+                Icons.arrow_back_ios_rounded,
+                size: 14,
+                color: hasPrev ? textColor : AppColors.textMuted,
+              ),
+              label: Text(
+                'reader_prev_chapter'.tr,
+                style: hasPrev ? enabledStyle : disabledStyle,
+              ),
+            ),
+            Text(
+              'reader_chapter_progress'.trArgs(['$current', '$total']),
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: hasNext ? controller.nextChapter : null,
+              label: Text(
+                'reader_next_chapter'.tr,
+                style: hasNext ? enabledStyle : disabledStyle,
+              ),
+              icon: Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
+                color: hasNext ? textColor : AppColors.textMuted,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

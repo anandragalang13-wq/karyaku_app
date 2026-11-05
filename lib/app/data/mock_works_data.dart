@@ -1,5 +1,6 @@
+import 'book_covers.dart';
 import 'models/book_model.dart';
-import 'models/work_model.dart';
+import 'models/work_model.dart'; 
 import 'package:karyaku_app/app/data/models/work_model_exension.dart';
 
 class MockWorksData {
@@ -125,7 +126,7 @@ kepada pohon berbunga itu''',
       authorId: 'anandra-galang',
       title: 'Menantikan Hujan',
       type: WorkType.puisi,
-      cover: null,
+      cover: BookCovers.hujanBulanJuni,
       content: 'Hujan turun perlahan, membasahi rindu yang tertunda...',
       synopsis: 'Kumpulan puisi tentang penantian dan harapan.',
       tags: const ['Puisi', 'Alam'],
@@ -141,7 +142,7 @@ kepada pohon berbunga itu''',
       authorId: 'anandra-galang',
       title: 'Catatan Perjalanan',
       type: WorkType.cerpen,
-      cover: null,
+      cover: BookCovers.senjaDiPelantara,
       content: 'Draft belum selesai...',
       synopsis: null,
       tags: const ['Cerpen'],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../services/locale_service.dart';
+import '../../../services/reading_prefs_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../controllers/pengaturan_akun_controller.dart';
@@ -90,8 +91,12 @@ class PengaturanAkunView extends GetView<PengaturanAkunController> {
                     Expanded(
                       child: Slider(
                         value: controller.fontSize.value,
-                        min: 12,
-                        max: 24,
+                        min: ReadingPrefsService.minFontSize,
+                        max: ReadingPrefsService.maxFontSize,
+                        divisions:
+                            (ReadingPrefsService.maxFontSize -
+                                    ReadingPrefsService.minFontSize)
+                                .round(),
                         activeColor: AppColors.primaryNavy,
                         onChanged: controller.changeFontSize,
                       ),
