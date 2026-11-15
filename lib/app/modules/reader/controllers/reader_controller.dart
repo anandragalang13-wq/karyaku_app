@@ -1,9 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
-import '../../../data/mock_data.dart';
+import '../../../data/chapter_content.dart';
 import '../../../data/models/book_model.dart';
 import '../../../data/novel_chapters.dart';
+import '../../../services/book_service.dart';
 import '../../../services/reading_prefs_service.dart';
 import '../../../theme/app_theme.dart';
 
@@ -34,10 +35,72 @@ class ReaderController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // Dibuka tanpa argumen → pakai karya kosong (tanpa data dummy).
     book = Get.arguments is BookModel
         ? Get.arguments as BookModel
-        : MockData.detailBook;
-    chapters = NovelContent.forBook(book.title);
+        : const BookModel(
+            id: '',
+            title: '',
+            author: '',
+            category: 'Novel',
+            rating: 0,
+            views: 0,
+            totalChapters: 0,
+            synopsis: '',
+            tags: [],
+            coverGradient: [Color(0xFF667eea), Color(0xFF764ba2)],
+          );
+    chapters = _chaptersFor(book);
+    // Catat posisi baca awal untuk halaman Perpustakaan (best-effort).
+    _recordReading();
+  }
+
+  /// Daftar bab sebuah karya — urutan prioritas:
+  ///
+  /// 1. **Isi dari database** (`books.content`): sumber utama, tiap karya
+  ///    punya judul & isi bab yang berbeda sesuai data aslinya.
+  /// 2. Konten lokal (hanya untuk judul yang memang punya konten lokal).
+  /// 3. Sinopsis sebagai satu-satunya bila isi karya masih kosong.
+  List<NovelChapter> _chaptersFor(BookModel target) {
+    final blocks = ChapterContent.parse(target.content);
+    if (blocks.isNotEmpty) {
+      return [
+        for (final block in blocks)
+          NovelChapter(
+            number: block.number,
+            title: block.title,
+            content: block.body,
+          ),
+      ];
+    }
+
+    final local = NovelContent.forBook(target.title);
+    if (local.isNotEmpty) return local;
+
+    final fallback = target.synopsis.trim();
+    return [
+      NovelChapter(
+        number: 1,
+        title: '',
+        content: fallback.isEmpty ? '' : fallback,
+      ),
+    ];
+  }
+
+  /// Mencatat bab yang sedang dibaca user ke `reading_history` supaya
+  /// karya muncul di tab Histori Perpustakaan dengan progres terkini.
+  /// Kegagalan dicatat ke log tanpa mengganggu proses membaca.
+  void _recordReading() {
+    if (!Get.isRegistered<BookService>()) return;
+    try {
+      Get.find<BookService>().recordReading(
+        bookId: book.id,
+        chapter: currentChapterIndex.value + 1,
+        totalChapters: chapters.length,
+      );
+    } catch (e) {
+      print('Record reading error: $e');
+    }
   }
 
   @override
@@ -58,6 +121,8 @@ class ReaderController extends GetxController {
 
     currentChapterIndex.value = index;
     _scrollToTop();
+    // Perbarui posisi baca di riwayat (supaya progres di Perpustakaan ikut).
+    _recordReading();
   }
 
   void nextChapter() => goToChapter(currentChapterIndex.value + 1);

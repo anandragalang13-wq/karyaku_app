@@ -30,6 +30,8 @@ extension BookModelExtension on BookModel {
       // Cover dari database; kalau kosong, BookModel.coverAsset otomatis
       // mengisi dengan foto dari folder assets berdasarkan judul.
       coverAsset: json['cover_asset'] as String?,
+      // Isi karya dari kolom `content` — sumber bab untuk halaman Reader.
+      content: json['content'] as String? ?? '',
     );
   }
 

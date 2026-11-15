@@ -3,6 +3,7 @@ import '../../../data/models/work_model.dart';
 import '../../../data/models/work_model_exension.dart';
 import '../../../routes/app_routes.dart';
 import '../../../services/book_service.dart';
+import '../../main_nav/controllers/main_nav_controller.dart';
 
 /// Controller untuk halaman Beranda: karya rekomendasi, kategori,
 /// dan daftar karya terpopuler (yang sudah approved) dari Supabase.
@@ -100,5 +101,15 @@ class BerandaController extends GetxController {
 
   void navigateToCreateWork() {
     Get.toNamed(Routes.TAMBAH_KARYA);
+  }
+
+  /// Membuka halaman Temukan (Pencarian) dari tombol search di Beranda.
+  ///
+  /// Beranda berada di dalam shell [MainNavController], jadi cukup pindah
+  /// tab — user langsung bisa mengetik kata kunci di kolom pencarian.
+  void openSearch() {
+    if (Get.isRegistered<MainNavController>()) {
+      Get.find<MainNavController>().changeTab(2);
+    }
   }
 }

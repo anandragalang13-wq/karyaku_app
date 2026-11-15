@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../data/models/book_model.dart';
-import '../../../services/locale_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/book_cover.dart';
 import '../../../widgets/rating_stars.dart';
@@ -50,11 +49,6 @@ class PencarianView extends GetView<PencarianController> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // Tombol Ganti Bahasa
-                  IconButton(
-                    icon: const Icon(Icons.language_rounded, color: AppColors.primaryNavy),
-                    onPressed: () => _showLanguageSelector(context),
-                  ),
                   InkWell(
                     onTap: () => _openFilterSheet(context),
                     borderRadius: BorderRadius.circular(24),
@@ -107,51 +101,6 @@ class PencarianView extends GetView<PencarianController> {
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-    );
-  }
-
-  // Pemilih bahasa cepat. Memakai LocaleService yang sama dengan halaman
-  // Pengaturan supaya pilihan bahasa selalu konsisten & tersimpan di seluruh
-  // aplikasi (bukan Get.updateLocale langsung yang tidak tersimpan).
-  void _showLanguageSelector(BuildContext context) {
-    final localeService = Get.find<LocaleService>();
-
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Obx(
-          () => Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'settings_language'.tr,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              ...AppLanguage.values.map(
-                (lang) => ListTile(
-                  leading: Icon(
-                    localeService.currentLanguage.value == lang
-                        ? Icons.radio_button_checked_rounded
-                        : Icons.radio_button_off_rounded,
-                    color: AppColors.primaryNavy,
-                  ),
-                  title: Text(lang.displayName),
-                  onTap: () {
-                    localeService.changeLanguage(lang);
-                    Get.back();
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -322,37 +271,6 @@ class _FilterSheet extends GetView<PencarianController> {
               ),
             ),
             const SizedBox(height: 20),
-            Text(
-              'search_status'.tr,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            Obx(
-              () => Column(
-                children: [
-                  CheckboxListTile(
-                    value: controller.statusSelesai.value,
-                    onChanged: controller.toggleSelesai,
-                    title: Text('search_status_finished'.tr),
-                    controlAffinity: ListTileControlAffinity.leading,
-                    contentPadding: EdgeInsets.zero,
-                    activeColor: AppColors.primaryNavy,
-                  ),
-                  CheckboxListTile(
-                    value: controller.statusOngoing.value,
-                    onChanged: controller.toggleOngoing,
-                    title: Text('search_status_ongoing'.tr),
-                    controlAffinity: ListTileControlAffinity.leading,
-                    contentPadding: EdgeInsets.zero,
-                    activeColor: AppColors.primaryNavy,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
             Text(
               'search_sort_by'.tr,
               style: TextStyle(

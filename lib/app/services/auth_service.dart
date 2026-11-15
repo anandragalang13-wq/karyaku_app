@@ -17,6 +17,9 @@ class AuthService extends GetxService {
   RxBool get isLoading => _supabaseAuth.isLoading;
   RxString get errorMessage => _supabaseAuth.errorMessage;
 
+  /// Apakah profil user sudah tersimpan di tabel `users`.
+  RxBool get profileSynced => _supabaseAuth.profileSynced;
+
   Future<void> login({required String email, required String password}) =>
       _supabaseAuth.login(email: email, password: password);
 
@@ -31,7 +34,11 @@ class AuthService extends GetxService {
 
   Future<void> refreshSession() => _supabaseAuth.refreshSession();
 
-  Future<void> becomeWriter({
+  /// Mendaftarkan akun sebagai penulis.
+  ///
+  /// Mengembalikan `true` bila pendaftaran berhasil (status `is_writer`
+  /// sudah tersimpan di database), `false` bila gagal.
+  Future<bool> becomeWriter({
     required String penName,
     List<String> favoriteGenres = const [],
   }) =>

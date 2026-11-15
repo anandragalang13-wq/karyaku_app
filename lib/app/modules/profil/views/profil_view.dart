@@ -42,6 +42,35 @@ class ProfilView extends GetView<ProfilController> {
               ],
             ),
             const SizedBox(height: 12),
+            // Peringatan: profil belum tersimpan di database (mis. tabel
+            // `users` belum dibuat di Supabase).
+            if (controller.profileMissing)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.accentOrange.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppColors.accentOrange.withOpacity(0.45),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.warning_amber_rounded,
+                        size: 20, color: AppColors.accentOrange),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'profile_db_missing_hint'.tr,
+                        style: const TextStyle(fontSize: 12.5, height: 1.35),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             Center(
               child: Stack(
                 children: [
@@ -137,7 +166,10 @@ class ProfilView extends GetView<ProfilController> {
                   const SizedBox(height: 20),
                 ],
               ),
-            // Section Pusat Penulis / Jadi Penulis
+            // Section Pusat Penulis / Mulai Menulis.
+            // Untuk pembaca: tombol "Daftar Sebagai Penulis" agar fitur
+            // menulis karya tetap bisa diakses. Untuk penulis: shortcut
+            // "Tambah Karya" + "Kelola Karya".
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -149,7 +181,9 @@ class ProfilView extends GetView<ProfilController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isWriter ? 'profile_writer_hub'.tr : 'profile_become_author'.tr,
+                    isWriter
+                        ? 'profile_writer_hub'.tr
+                        : 'profile_start_writing'.tr,
                     style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -159,7 +193,7 @@ class ProfilView extends GetView<ProfilController> {
                   Text(
                     isWriter
                         ? 'profile_writer_hub_desc'.tr
-                        : 'profile_become_author_desc'.tr,
+                        : 'profile_start_writing_desc'.tr,
                     style: TextStyle(
                         color: Colors.white.withOpacity(0.7), fontSize: 12),
                   ),
@@ -188,8 +222,9 @@ class ProfilView extends GetView<ProfilController> {
               label: 'profile_app_settings'.tr,
               onTap: controller.openSettings,
             ),
-            // Menu Kelola Karya (draft + statistik buku) hanya untuk penulis
-            if (isWriter)
+            // Menu Kelola Karya: untuk penulis, atau bagi siapa pun yang
+            // sudah punya karya sendiri di database.
+            if (controller.showManageWorks)
               _ProfileMenuTile(
                 icon: Icons.auto_stories_rounded,
                 label: 'profile_manage_works'.tr,
@@ -199,6 +234,12 @@ class ProfilView extends GetView<ProfilController> {
               icon: Icons.help_outline_rounded,
               label: 'profile_help_center'.tr,
               onTap: controller.openHelp,
+            ),
+            // Umpan balik — form sungguhan yang tersimpan ke database.
+            _ProfileMenuTile(
+              icon: Icons.rate_review_outlined,
+              label: 'profile_feedback_menu'.tr,
+              onTap: controller.openFeedback,
             ),
             const SizedBox(height: 12),
             Center(
@@ -264,14 +305,20 @@ class ProfilView extends GetView<ProfilController> {
               onTap: controller.openSettings,
             ),
             _ProfileMenuTile(
-              icon: Icons.headset_mic_outlined,
-              label: 'profile_help_feedback'.tr,
+              icon: Icons.help_outline_rounded,
+              label: 'profile_help_center'.tr,
               onTap: controller.openHelp,
             ),
+            // Mulai menulis karya (untuk tamu akan diarahkan masuk dulu).
             _ProfileMenuTile(
               icon: Icons.edit_note_rounded,
-              label: 'profile_become_author'.tr,
+              label: 'profile_start_writing'.tr,
               onTap: controller.goToWriterRegistration,
+            ),
+            _ProfileMenuTile(
+              icon: Icons.rate_review_outlined,
+              label: 'profile_feedback_menu'.tr,
+              onTap: controller.openFeedback,
             ),
           ],
         ),

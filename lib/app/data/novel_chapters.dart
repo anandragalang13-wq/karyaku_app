@@ -155,10 +155,17 @@ Di luar, hujan bulan juni turun lagi, rahasia seperti biasa, dan tidak seorang p
     ),
   ];
 
-  /// Konten bab untuk sebuah buku.
+  /// Konten bab lokal untuk sebuah buku — hanya dipakai sebagai cadangan
+  /// saat database belum punya isi untuk judul ini.
   ///
-  /// Selama belum ada penulisan bab per judul, semua buku yang dibuka di
-  /// halaman Reader memakai novel contoh [lautBercerita] — sesuai perilaku
-  /// lama aplikasi yang hanya menampilkan satu teks contoh untuk semua buku.
-  static List<NovelChapter> forBook(String? title) => lautBercerita;
+  /// Penting: hanya judul yang memang punya konten lokal (kini hanya
+  /// "Laut Bercerita") yang dikembalikan. JUDUL LAIN MENDAPATKAN DAFTAR
+  /// KOSONG — bukan novel contoh yang sama — supaya setiap karya yang
+  /// dibuka di halaman Reader selalu menampilkan isi miliknya sendiri
+  /// (dari kolom `books.content`), bukan teks seragam.
+  static List<NovelChapter> forBook(String? title) {
+    final normalized = title?.trim().toLowerCase() ?? '';
+    if (normalized == 'laut bercerita') return lautBercerita;
+    return const [];
+  }
 }

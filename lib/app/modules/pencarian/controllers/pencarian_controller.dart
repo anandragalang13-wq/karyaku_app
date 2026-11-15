@@ -15,8 +15,6 @@ class PencarianController extends GetxController {
 
   // State filter (nilai sementara di bottom sheet, diterapkan saat "Terapkan Filter")
   final RxInt filterCategoryIndex = 0.obs; // 0 Semua,1 Cerpen,2 Puisi,3 Novel
-  final RxBool statusSelesai = false.obs;
-  final RxBool statusOngoing = true.obs;
   final Rx<SortBy> sortBy = SortBy.terpopuler.obs;
 
   final categories = const ['Semua', 'Cerpen', 'Puisi', 'Novel'];
@@ -45,10 +43,7 @@ class PencarianController extends GetxController {
           b.author.toLowerCase().contains(searchText.value.toLowerCase());
       final matchesCategory = filterCategoryIndex.value == 0 ||
           b.category == categories[filterCategoryIndex.value];
-      final matchesStatus = (statusSelesai.value && b.status == 'Selesai') ||
-          (statusOngoing.value && b.status == 'Ongoing') ||
-          (!statusSelesai.value && !statusOngoing.value);
-      return matchesQuery && matchesCategory && matchesStatus;
+      return matchesQuery && matchesCategory;
     }).toList();
 
     switch (sortBy.value) {
@@ -65,8 +60,6 @@ class PencarianController extends GetxController {
   }
 
   void setCategory(int i) => filterCategoryIndex.value = i;
-  void toggleSelesai(bool? v) => statusSelesai.value = v ?? false;
-  void toggleOngoing(bool? v) => statusOngoing.value = v ?? false;
   void setSort(SortBy s) => sortBy.value = s;
 
   void applyFilter() => Get.back();

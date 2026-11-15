@@ -263,7 +263,11 @@ class DetailBukuView extends GetView<DetailBukuController> {
                 ),
               ),
               const SizedBox(width: 10),
-              _RoundIconButton(icon: Icons.share_outlined, onTap: () {}),
+              // Bagikan detail karya ke aplikasi lain (dialog share sistem).
+              _RoundIconButton(
+                icon: Icons.share_outlined,
+                onTap: controller.shareBook,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(

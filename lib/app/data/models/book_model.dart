@@ -20,6 +20,11 @@ class BookModel {
   final IconData coverIcon;
   final String? _coverAsset;   // <-- tambah ini
 
+  /// Isi karya (blok-blok bab) apa adanya dari kolom `books.content`.
+  /// Sumber tunggal isi baca di halaman Reader — tiap karya punya isi
+  /// bab yang berbeda sesuai data asli di database.
+  final String content;
+
   const BookModel({
     required this.id,
     required this.title,
@@ -36,6 +41,7 @@ class BookModel {
     required this.coverGradient,
     this.coverIcon = Icons.menu_book_rounded,
     String? coverAsset,          // <-- tambah ini
+    this.content = '',
   }) : _coverAsset = coverAsset;
 
   /// Cover buku. Kalau data aslinya kosong, otomatis mengambil foto dari
@@ -70,6 +76,7 @@ class BookModel {
       coverGradient: const [Color(0xFF6A11CB), Color(0xFF2575FC)],
       coverIcon: Icons.menu_book_rounded,
       coverAsset: json['cover_asset'] as String?,  // <-- tambah ini
+      content: json['content'] as String? ?? '',
     );
   }
 
@@ -87,6 +94,7 @@ class BookModel {
       'tags': tags,
       'status': status,
       'cover_asset': coverAsset,   // <-- tambah ini
+      'content': content,
     };
   }
 
@@ -106,6 +114,7 @@ class BookModel {
     List<Color>? coverGradient,
     IconData? coverIcon,
     String? coverAsset,    // <-- tambah ini
+    String? content,
   }) {
     return BookModel(
       id: id ?? this.id,
@@ -123,6 +132,7 @@ class BookModel {
       coverGradient: coverGradient ?? this.coverGradient,
       coverIcon: coverIcon ?? this.coverIcon,
       coverAsset: coverAsset ?? this.coverAsset,  // <-- tambah ini
+      content: content ?? this.content,
     );
   }
 }

@@ -120,20 +120,36 @@ class LoginView extends GetView<LoginController> {
                     const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
-                      child: OutlinedButton.icon(
+                      height: 50,
+                      child: OutlinedButton(
                         onPressed: controller.loginWithGoogle,
-                        icon: Image.asset(
-                          'assets/images/google_logo.png',
-                          width: 22,
-                          height: 22,
-                        ),
-                        label: const Text('Masuk dengan Google'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textPrimary,
                           side: const BorderSide(color: AppColors.border),
-                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14)),
+                        ),
+                        // Logo Google + teks diratakan manual supaya
+                        // posisinya rapi dan sejajar di tengah tombol.
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              'assets/images/google_logo.png',
+                              width: 20,
+                              height: 20,
+                              fit: BoxFit.contain,
+                            ),
+                            const SizedBox(width: 10),
+                            const Text(
+                              'Masuk dengan Google',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

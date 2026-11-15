@@ -8,6 +8,7 @@ import 'app/routes/app_pages.dart';
 import 'app/routes/app_routes.dart';
 import 'app/services/auth_service.dart';
 import 'app/services/book_service.dart';
+import 'app/services/feedback_service.dart';
 import 'app/services/locale_service.dart';
 import 'app/services/reading_prefs_service.dart';
 import 'app/services/supabase_auth_service.dart';
@@ -25,7 +26,7 @@ void main() async {
   Get.put<SupabaseAuthService>(SupabaseAuthService(), permanent: true);
   Get.put<BookService>(BookService(), permanent: true);
   Get.put(AuthService(), permanent: true);
-
+  Get.put(FeedbackService(), permanent: true);
   // Muat bahasa yang tersimpan (default: Bahasa Indonesia) sebelum
   // aplikasi dijalankan supaya tampilan pertama sudah sesuai pilihan user.
   final localeService = await Get.putAsync<LocaleService>(

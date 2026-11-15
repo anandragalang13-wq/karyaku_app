@@ -80,6 +80,9 @@ extension WorkModelToBookModel on WorkModel {
       coverAsset: cover,
       coverGradient: _gradientForCategory(category),
       coverIcon: _iconForCategory(category),
+      // Isi bab karya dari database (kolom `content`) supaya halaman
+      // Reader menampilkan isi karya yang sebenarnya, bukan teks contoh.
+      content: content,
     );
   }
 }

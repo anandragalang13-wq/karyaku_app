@@ -21,22 +21,31 @@ class AuthHeader extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 72,
-            height: 72,
-            padding: const EdgeInsets.all(4),
+            width: 88,
+            height: 88,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.06),
-              borderRadius: BorderRadius.circular(20),
+              // Kotak putih membuat logo (yang berwarna navy) terlihat
+              // jelas dan kontras di atas header yang gelap.
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.18),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Image.asset(
                 'assets/images/logo.png',
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) => const Icon(
                   Icons.menu_book_rounded,
-                  color: Colors.white,
-                  size: 36,
+                  color: AppColors.primaryNavy,
+                  size: 40,
                 ),
               ),
             ),

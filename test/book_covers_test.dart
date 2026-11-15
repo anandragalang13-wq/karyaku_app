@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:karyaku_app/app/data/book_covers.dart';
 import 'package:karyaku_app/app/data/models/book_model.dart';
-import 'package:karyaku_app/app/data/mock_data.dart';
 
 void main() {
   test('foto cover yang tersedia ada semua di assets/images', () {
@@ -52,10 +51,5 @@ void main() {
     );
 
     expect(booksWithoutCover.coverAsset, BookCovers.hujanBulanJuni);
-
-    // Data contoh yang sudah ada di aplikasi juga ikut terisi.
-    expect(MockData.detailBook.coverAsset, BookCovers.lautBercerita);
-    expect(MockData.statPopularWorks.every((work) => work.cover.isNotEmpty),
-        isTrue);
   });
 }

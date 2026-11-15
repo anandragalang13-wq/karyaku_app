@@ -45,15 +45,27 @@ class DaftarPenulisController extends GetxController {
     errorText.value = '';
     isSubmitting.value = true;
 
-    // Simulasi proses registrasi penulis ke backend.
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    AuthService.to.becomeWriter(
+    // Pendaftaran benar-benar disimpan ke tabel `users` (status is_writer).
+    // Hasilnya dicek: bila gagal, user diberi tahu dan tetap di halaman ini
+    // supaya bisa mencoba lagi — bukan sekadar berpindah halaman lalu
+    // gagal menemukan fitur tulis karya.
+    final ok = await AuthService.to.becomeWriter(
       penName: penName,
       favoriteGenres: selectedGenres.toList(),
     );
 
     isSubmitting.value = false;
+
+    if (!ok) {
+      // Tampilkan alasan sebenarnya dari server (mis. izin RLS), bukan
+      // pesan generik, supaya masalahnya mudah ditindaklanjuti.
+      final reason = AuthService.to.errorMessage.value.trim();
+      errorText.value = reason.isEmpty
+          ? 'Gagal menyimpan pendaftaran penulis. Silakan coba lagi.'
+          : reason;
+      return;
+    }
+
     Get.back();
     Get.snackbar(
       'Selamat, ${penName}!',

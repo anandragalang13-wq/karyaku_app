@@ -84,6 +84,42 @@ String _genreLabel(String genre) {
 class _BerandaBodyState extends State<_BerandaBody> {
   int _selectedGenreIndex = 0;
 
+  // Pencarian langsung (live search) di halaman Beranda.
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _searchFocusNode.addListener(_onSearchFocusChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchFocusNode
+      ..removeListener(_onSearchFocusChanged)
+      ..dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) => setState(() {});
+
+  void _onSearchFocusChanged() => setState(() {});
+
+  /// Membersihkan kata kunci & menutup hasil pencarian.
+  void _clearSearch() {
+    _searchController.clear();
+    _searchFocusNode.unfocus();
+    setState(() {});
+  }
+
+  /// Mengetuk salah satu hasil pencarian → buka detail karya langsung.
+  void _openResult(WorkModel work) {
+    _clearSearch();
+    widget.controller.openWorkDetail(work);
+  }
+
   // ============================================================
   // MEMBUAT DAFTAR GENRE
   // ============================================================
@@ -186,7 +222,9 @@ class _BerandaBodyState extends State<_BerandaBody> {
             // HEADER
             // ==================================================
 
-            const _TopHeader(),
+            _TopHeader(
+              onSearch: widget.controller.openSearch,
+            ),
 
             const SizedBox(height: 22),
 
@@ -251,7 +289,9 @@ class _BerandaBodyState extends State<_BerandaBody> {
 // ============================================================
 
 class _TopHeader extends StatelessWidget {
-  const _TopHeader();
+  final VoidCallback onSearch;
+
+  const _TopHeader({required this.onSearch});
 
   @override
   Widget build(BuildContext context) {
@@ -286,10 +326,76 @@ class _TopHeader extends StatelessWidget {
                 },
               ),
 
+              const SizedBox(width: 10),
+
+              // NAMA APLIKASI
+              Text(
+                'KARYAKU',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.0,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+
               const Spacer(),
 
-              // SEARCH DIHAPUS
+              // SEARCH — membuka halaman Temukan untuk mencari karya.
+              InkWell(
+                onTap: onSearch,
+                borderRadius: BorderRadius.circular(24),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.primaryNavy,
+                    size: 22,
+                  ),
+                ),
+              ),
             ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // KOLOM PENCARIAN — mengetuknya langsung membawa user ke
+          // halaman Temukan supaya bisa mengetik kata kunci.
+          InkWell(
+            onTap: onSearch,
+            borderRadius: BorderRadius.circular(24),
+            child: Container(
+              height: 46,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.search_rounded,
+                      size: 20, color: AppColors.textMuted),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'search_hint'.tr,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
 
           const SizedBox(height: 16),

@@ -14,7 +14,9 @@ import 'supabase_auth_service.dart';
 /// Akses data karya (tabel `books`), ulasan (`reviews`), dan cover (Storage).
 /// RLS di Supabase membuat publik hanya melihat karya `approved`.
 class BookService extends GetxService {
-  final SupabaseClient supabase = Supabase.instance.client;
+  /// Client Supabase. Dibuat lewat getter supaya service bisa diuji
+  /// ( subclass dapat menimpanya ) tanpa harus menginisialisasi Supabase.
+  SupabaseClient get supabase => Supabase.instance.client;
 
   static const String coversBucket = 'covers';
 
@@ -116,6 +118,192 @@ class BookService extends GetxService {
       print('Get books error: $e');
       return [];
     }
+  }
+
+  // ------------------------------------------------------------------
+  // PERPUSTAKAAN (riwayat baca & koleksi per user)
+  // ------------------------------------------------------------------
+
+  /// Karya yang pernah dibuka/dibaca user login, terbaru dulu, lengkap
+  /// dengan progres baca milik user tersebut.
+  ///
+  /// Mengembalikan daftar kosong bila user belum pernah membaca apa pun
+  /// (atau belum login) — halaman Perpustakaan lalu menampilkan keadaan
+  /// kosong, bukan daftar karya dummy.
+  Future<List<BookModel>> getReadingHistory() async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return [];
+
+    final rows = await supabase
+        .from(SupabaseConfig.readingHistoryTable)
+        .select()
+        .eq('user_id', userId)
+        .order('updated_at', ascending: false);
+
+    final list = rows as List;
+    if (list.isEmpty) return [];
+
+    // Simpan posisi baca per karya, lalu ambil data karyanya.
+    final positionByBook = <String, Map<String, dynamic>>{};
+    final bookIds = <String>[];
+    for (final row in list) {
+      final r = Map<String, dynamic>.from(row as Map);
+      final id = r['book_id']?.toString() ?? '';
+      if (id.isEmpty || positionByBook.containsKey(id)) continue;
+      positionByBook[id] = r;
+      bookIds.add(id);
+    }
+
+    final books = await _booksByIds(bookIds);
+    return [
+      for (final book in books)
+        book.copyWith(
+          currentChapter:
+              (positionByBook[book.id]?['last_chapter'] as num?)?.toInt() ?? 1,
+          progress: ((positionByBook[book.id]?['progress'] as num?)
+                      ?.toDouble() ??
+                  0)
+              .clamp(0.0, 1.0)
+              .toDouble(),
+        ),
+    ];
+  }
+
+  /// Mencatat interaksi user dengan sebuah karya untuk halaman Perpustakaan.
+  ///
+  /// - Tanpa [chapter]: menandai bahwa karya pernah dibuka — baris baru
+  ///   dibuat pada bab 1, baris lama hanya stempel waktunya diperbarui
+  ///   (progres lama tidak ditimpa).
+  /// - Dengan [chapter]: menyimpan posisi bab terakhir + progres baca.
+  ///
+  /// Best-effort: kegagalan dicatat ke log tanpa mengganggu proses membaca.
+  Future<void> recordReading({
+    required String bookId,
+    int? chapter,
+    int totalChapters = 1,
+  }) async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null || bookId.isEmpty) return;
+
+    try {
+      final total = totalChapters < 1 ? 1 : totalChapters;
+      final now = DateTime.now().toUtc().toIso8601String();
+      final table = SupabaseConfig.readingHistoryTable;
+
+      final existing = await supabase
+          .from(table)
+          .select('id')
+          .eq('user_id', userId)
+          .eq('book_id', bookId)
+          .maybeSingle();
+
+      if (existing == null) {
+        final startChapter = chapter ?? 1;
+        await supabase.from(table).insert({
+          'user_id': userId,
+          'book_id': bookId,
+          'last_chapter': startChapter,
+          'progress': (startChapter / total).clamp(0.0, 1.0).toDouble(),
+          'updated_at': now,
+        });
+      } else if (chapter != null) {
+        await supabase.from(table).update({
+          'last_chapter': chapter,
+          'progress': (chapter / total).clamp(0.0, 1.0).toDouble(),
+          'updated_at': now,
+        }).eq('id', existing['id']);
+      } else {
+        await supabase
+            .from(table)
+            .update({'updated_at': now}).eq('id', existing['id']);
+      }
+    } catch (e) {
+      print('Record reading error: $e');
+    }
+  }
+
+  /// Koleksi karya milik user login (terbaru dulu). Kosong bila user
+  /// belum pernah menambahkan karya ke koleksinya.
+  Future<List<BookModel>> getCollectionBooks() async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return [];
+
+    final rows = await supabase
+        .from(SupabaseConfig.collectionsTable)
+        .select()
+        .eq('user_id', userId)
+        .order('created_at', ascending: false);
+
+    final list = rows as List;
+    if (list.isEmpty) return [];
+
+    final bookIds = [
+      for (final row in list)
+        (row as Map)['book_id']?.toString() ?? '',
+    ].where((id) => id.isNotEmpty).toList();
+
+    return _booksByIds(bookIds);
+  }
+
+  /// Apakah karya sudah disimpan (di-bookmark) oleh user login?
+  /// Dipakai tombol Save di halaman Detail Buku.
+  Future<bool> isSaved(String bookId) async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null || bookId.isEmpty) return false;
+
+    final row = await supabase
+        .from(SupabaseConfig.collectionsTable)
+        .select('id')
+        .eq('user_id', userId)
+        .eq('book_id', bookId)
+        .maybeSingle();
+    return row != null;
+  }
+
+  /// Menambahkan karya ke koleksi user (idempoten bila sudah ada).
+  Future<void> addToCollection(String bookId) async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null || bookId.isEmpty) return;
+
+    await supabase.from(SupabaseConfig.collectionsTable).upsert(
+      {'user_id': userId, 'book_id': bookId},
+      onConflict: 'user_id,book_id',
+      ignoreDuplicates: true,
+    );
+  }
+
+  /// Menghapus karya dari koleksi user.
+  Future<void> removeFromCollection(String bookId) async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null || bookId.isEmpty) return;
+
+    await supabase
+        .from(SupabaseConfig.collectionsTable)
+        .delete()
+        .eq('user_id', userId)
+        .eq('book_id', bookId);
+  }
+
+  /// Mengambil karya berdasarkan daftar id (urutan mengikuti [bookIds]).
+  /// Id yang tidak ditemukan — sudah dihapus atau tidak boleh dilihat
+  /// karena RLS — diabaikan.
+  Future<List<BookModel>> _booksByIds(List<String> bookIds) async {
+    if (bookIds.isEmpty) return [];
+
+    final books = await supabase
+        .from(SupabaseConfig.booksTable)
+        .select()
+        .inFilter('id', bookIds);
+
+    final byId = <String, Map<String, dynamic>>{
+      for (final b in books as List)
+        (b as Map)['id'].toString(): Map<String, dynamic>.from(b),
+    };
+
+    return [
+      for (final id in bookIds)
+        if (byId[id] != null) BookModelExtension.fromJson(byId[id]!),
+    ];
   }
 
   Future<List<ReviewModel>> getReviews(String bookId) async {
