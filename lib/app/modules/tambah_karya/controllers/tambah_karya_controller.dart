@@ -16,8 +16,8 @@ class TambahKaryaController extends GetxController {
   final tagInputController = TextEditingController();
   final quillController = QuillController.basic();
 
-  // Kategori (Puisi punya halaman sendiri)
-  final categories = const ['Novel', 'Cerpen'];
+  // Kategori (termasuk Puisi yang punya halaman sendiri)
+  final categories = const ['Novel', 'Puisi', 'Cerpen'];
   final selectedCategoryIndex = 0.obs;
 
   // Tags
@@ -46,6 +46,8 @@ class TambahKaryaController extends GetxController {
   WorkType get selectedType {
     switch (selectedCategoryIndex.value) {
       case 1:
+        return WorkType.puisi;
+      case 2:
         return WorkType.cerpen;
       default:
         return WorkType.novel;
@@ -58,7 +60,7 @@ class TambahKaryaController extends GetxController {
       Get.toNamed('/tambah-puisi');
       return;
     }
-    selectedCategoryIndex.value = index == 2 ? 1 : index; // Map Cerpen to index 1 in reduced list
+    selectedCategoryIndex.value = index;
   }
 
   void addTag(String value) {

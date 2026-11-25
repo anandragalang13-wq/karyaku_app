@@ -9,6 +9,7 @@ abstract class Routes {
   static const PROGRES_CERITA = '/progres-cerita';
   static const TULIS_BAB = '/tulis-bab';
   static const READER = '/reader';
+  static const POETRY_READER = '/poetry-reader';
   static const LOGIN = '/login';
   static const REGISTER = '/register';
   static const TAMBAH_KARYA = '/tambah-karya';

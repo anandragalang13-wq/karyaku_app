@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../data/models/work_model.dart';
 import '../../../theme/app_colors.dart';
+import '../../../widgets/poetry_card.dart';
 import '../controllers/beranda_controller.dart';
 
 // ============================================================
@@ -120,14 +121,17 @@ class _BerandaBodyState extends State<_BerandaBody> {
     _isSearching.value = true;
     // Filter dari allWorks yang sudah dimuat
     final allWorks = widget.controller.allWorks;
-    final results = allWorks.where((work) {
-      final title = work.title.toLowerCase();
-      final author = work.authorName?.toLowerCase() ?? '';
-      final tags = work.tags.map((t) => t.toLowerCase()).join(' ');
-      return title.contains(query) ||
-          author.contains(query) ||
-          tags.contains(query);
-    }).take(10).toList();
+    final results = allWorks
+        .where((work) {
+          final title = work.title.toLowerCase();
+          final author = work.authorName?.toLowerCase() ?? '';
+          final tags = work.tags.map((t) => t.toLowerCase()).join(' ');
+          return title.contains(query) ||
+              author.contains(query) ||
+              tags.contains(query);
+        })
+        .take(10)
+        .toList();
     _searchResults.assignAll(results);
     _showSearchResults.value = true;
     _isSearching.value = false;
@@ -227,7 +231,8 @@ class _BerandaBodyState extends State<_BerandaBody> {
                 Text(
                   controller.errorMessage.value,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                  style:
+                      TextStyle(fontSize: 14, color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
@@ -440,7 +445,7 @@ class _TopHeaderState extends State<_TopHeader> {
             controller: widget.searchController,
             focusNode: widget.searchFocusNode,
             textInputAction: TextInputAction.search,
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(color: AppColors.textPrimary),
             onSubmitted: (value) {
               if (widget.searchResults.isNotEmpty) {
                 widget.onOpenResult(widget.searchResults.first);
@@ -448,12 +453,9 @@ class _TopHeaderState extends State<_TopHeader> {
             },
             decoration: InputDecoration(
               hintText: 'search_hint'.tr,
-              hintStyle: TextStyle(
-                  color: Colors.white.withOpacity(0.6), fontSize: 13),
+              hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
               prefixIcon: Icon(Icons.search_rounded,
-                  color: Colors.white.withOpacity(0.7), size: 20),
-              // ValueListenableBuilder: mendengarkan perubahan teks di
-              // TextEditingController (yang bukan variabel reaktif GetX).
+                  color: AppColors.textSecondary, size: 20),
               suffixIcon: ValueListenableBuilder<TextEditingValue>(
                 valueListenable: widget.searchController,
                 builder: (context, value, _) {
@@ -471,14 +473,13 @@ class _TopHeaderState extends State<_TopHeader> {
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white),
+                                  strokeWidth: 2, color: AppColors.primaryNavy),
                             ),
                           )
                         else
                           IconButton(
                             icon: Icon(Icons.clear_rounded,
-                                color: Colors.white.withOpacity(0.7),
-                                size: 20),
+                                color: AppColors.textSecondary, size: 20),
                             onPressed: widget.onClearSearch,
                           ),
                       ],
@@ -487,7 +488,7 @@ class _TopHeaderState extends State<_TopHeader> {
                 },
               ),
               filled: true,
-              fillColor: AppColors.primaryNavy,
+              fillColor: Colors.white,
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               border: OutlineInputBorder(
@@ -496,13 +497,12 @@ class _TopHeaderState extends State<_TopHeader> {
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(24),
-                borderSide: BorderSide(
-                    color: AppColors.primaryNavyLight.withOpacity(0.5)),
+                borderSide: BorderSide(color: AppColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(24),
-                borderSide: const BorderSide(
-                    color: AppColors.accentOrange, width: 2),
+                borderSide:
+                    const BorderSide(color: AppColors.accentOrange, width: 2),
               ),
             ),
           ),
@@ -535,9 +535,14 @@ class _TopHeaderState extends State<_TopHeader> {
                     Divider(height: 1, color: AppColors.border),
                 itemBuilder: (context, index) {
                   final work = widget.searchResults[index];
+                  // Khusus Puisi: gunakan layout tipografi
+                  if (work.type == WorkType.puisi) {
+                    return _PoetrySearchTile(
+                        work: work, onTap: () => widget.onOpenResult(work));
+                  }
                   return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 4),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: buildWorkCover(work, width: 40, height: 53),
@@ -663,11 +668,9 @@ class _GenreChips extends StatelessWidget {
                   _genreLabel(genres[index]),
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight:
-                        selected ? FontWeight.w700 : FontWeight.w500,
-                    color: selected
-                        ? AppColors.accentBlue
-                        : AppColors.textPrimary,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color:
+                        selected ? AppColors.accentBlue : AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -720,7 +723,6 @@ class _WorkHorizontalList extends StatelessWidget {
     }
 
     return SizedBox(
-      // SAMA DENGAN KARTU PILIHAN TERBAIK
       height: 220,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -735,57 +737,47 @@ class _WorkHorizontalList extends StatelessWidget {
             ),
             child: GestureDetector(
               onTap: () => onTap(work),
-              child: SizedBox(
-                // UKURAN KARTU SAMA
-                width: 112,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ==================================================
-                    // COVER BUKU
-                    // ==================================================
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: buildWorkCover(
-                        work,
-                        width: 112,
-                        height: 150,
+              child: work.type == WorkType.puisi
+                  ? PoetryCardHorizontal(work: work, onTap: () => onTap(work))
+                  : SizedBox(
+                      width: 112,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: buildWorkCover(
+                              work,
+                              width: 112,
+                              height: 150,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            work.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            work.tags.isNotEmpty
+                                ? work.tags.first
+                                : work.authorId,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-
-                    const SizedBox(height: 6),
-
-                    // ==================================================
-                    // JUDUL
-                    // ==================================================
-                    Text(
-                      work.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-
-                    const SizedBox(height: 2),
-
-                    // ==================================================
-                    // GENRE
-                    // ==================================================
-                    Text(
-                      work.tags.isNotEmpty ? work.tags.first : work.authorId,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
           );
         },
@@ -931,14 +923,17 @@ class _PopularWorkTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Khusus Puisi: gunakan layout tipografi tanpa cover
+    if (work.type == WorkType.puisi) {
+      return _PoetryPopularTile(
+          rank: rank, work: work, color: color, onTap: onTap);
+    }
+
     return GestureDetector(
       onTap: onTap,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ============================================
-          // THUMBNAIL + BADGE PERINGKAT
-          // ============================================
           Stack(
             clipBehavior: Clip.none,
             children: [
@@ -973,9 +968,6 @@ class _PopularWorkTile extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 10),
-          // ============================================
-          // JUDUL + SUBJUDUL
-          // ============================================
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1007,5 +999,309 @@ class _PopularWorkTile extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _PoetryPopularTile extends StatelessWidget {
+  final int rank;
+  final WorkModel work;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _PoetryPopularTile({
+    required this.rank,
+    required this.work,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final firstVerse = _extractFirstVerse(work.content);
+    final themeColor = _getThemeColor(work.tags);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            colors: [
+              themeColor.withValues(alpha: 0.12),
+              themeColor.withValues(alpha: 0.04),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(color: themeColor.withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Badge ranking
+            Container(
+              width: 22,
+              height: 22,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(8),
+                ),
+              ),
+              child: Text(
+                '$rank',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            // Konten puisi
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: themeColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'Puisi',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: themeColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    work.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                      height: 1.25,
+                    ),
+                  ),
+                  if (firstVerse.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '"$firstVerse"',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic,
+                        color: AppColors.textSecondary.withValues(alpha: 0.8),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _extractFirstVerse(String content) {
+    final lines = content
+        .split('\n')
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
+    if (lines.isEmpty) return '';
+    final firstLines = lines.take(2).join(' / ');
+    return firstLines.length > 60
+        ? '${firstLines.substring(0, 57)}...'
+        : firstLines;
+  }
+
+  Color _getThemeColor(List<String> tags) {
+    if (tags.isEmpty) return AppColors.badgePuisi;
+    final tag = tags.first.toLowerCase();
+    if (tag.contains('cinta') ||
+        tag.contains('romantis') ||
+        tag.contains('love')) {
+      return const Color(0xFFE91E63);
+    }
+    if (tag.contains('malam') ||
+        tag.contains('gelap') ||
+        tag.contains('night')) {
+      return const Color(0xFF673AB7);
+    }
+    if (tag.contains('alam') ||
+        tag.contains('nature') ||
+        tag.contains('hijau')) {
+      return const Color(0xFF4CAF50);
+    }
+    if (tag.contains('sedih') ||
+        tag.contains('galau') ||
+        tag.contains('duka')) {
+      return const Color(0xFF2196F3);
+    }
+    if (tag.contains('harapan') ||
+        tag.contains('semangat') ||
+        tag.contains('motivasi')) {
+      return const Color(0xFFFF9800);
+    }
+    return AppColors.badgePuisi;
+  }
+}
+
+/// Tile pencarian khusus untuk Puisi
+class _PoetrySearchTile extends StatelessWidget {
+  final WorkModel work;
+  final VoidCallback onTap;
+
+  const _PoetrySearchTile({
+    required this.work,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final firstVerse = _extractFirstVerse(work.content);
+    final themeColor = _getThemeColor(work.tags);
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      leading: Container(
+        width: 40,
+        height: 53,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(6),
+          gradient: LinearGradient(
+            colors: [
+              themeColor.withValues(alpha: 0.15),
+              themeColor.withValues(alpha: 0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(color: themeColor.withValues(alpha: 0.3)),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: Container(
+                width: 3,
+                decoration: BoxDecoration(
+                  color: themeColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(6),
+                    bottomLeft: Radius.circular(6),
+                  ),
+                ),
+              ),
+            ),
+            Center(
+              child: Icon(
+                Icons.format_quote_rounded,
+                color: themeColor.withValues(alpha: 0.6),
+                size: 20,
+              ),
+            ),
+          ],
+        ),
+      ),
+      title: Text(
+        work.title,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (firstVerse.isNotEmpty) ...[
+            Text(
+              '"$firstVerse"',
+              style: TextStyle(
+                fontSize: 11,
+                fontStyle: FontStyle.italic,
+                color: AppColors.textSecondary.withValues(alpha: 0.7),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          if (work.authorName != null)
+            Text(
+              work.authorName!,
+              style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+            ),
+        ],
+      ),
+      onTap: onTap,
+    );
+  }
+
+  String _extractFirstVerse(String content) {
+    final lines = content
+        .split('\n')
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
+    if (lines.isEmpty) return '';
+    final firstLine = lines.first;
+    return firstLine.length > 40
+        ? '${firstLine.substring(0, 37)}...'
+        : firstLine;
+  }
+
+  Color _getThemeColor(List<String> tags) {
+    if (tags.isEmpty) return AppColors.badgePuisi;
+    final tag = tags.first.toLowerCase();
+    if (tag.contains('cinta') ||
+        tag.contains('romantis') ||
+        tag.contains('love')) {
+      return const Color(0xFFE91E63);
+    }
+    if (tag.contains('malam') ||
+        tag.contains('gelap') ||
+        tag.contains('night')) {
+      return const Color(0xFF673AB7);
+    }
+    if (tag.contains('alam') ||
+        tag.contains('nature') ||
+        tag.contains('hijau')) {
+      return const Color(0xFF4CAF50);
+    }
+    if (tag.contains('sedih') ||
+        tag.contains('galau') ||
+        tag.contains('duka')) {
+      return const Color(0xFF2196F3);
+    }
+    if (tag.contains('harapan') ||
+        tag.contains('semangat') ||
+        tag.contains('motivasi')) {
+      return const Color(0xFFFF9800);
+    }
+    return AppColors.badgePuisi;
   }
 }

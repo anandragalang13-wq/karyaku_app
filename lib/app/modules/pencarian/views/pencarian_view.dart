@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../data/models/book_model.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/book_cover.dart';
+import '../../../widgets/poetry_card.dart';
 import '../../../widgets/rating_stars.dart';
 import '../controllers/pencarian_controller.dart';
 
@@ -48,34 +49,42 @@ class PencarianView extends GetView<PencarianController> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Container(
-                      height: 46,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryNavy,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: AppColors.primaryNavyLight.withOpacity(0.5)),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.search_rounded, color: Colors.white.withOpacity(0.7)),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextField(
-                              onChanged: (v) => controller.searchText.value = v,
-                              style: const TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
-                                hintText: 'search_hint'.tr,
-                                hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
-                                border: InputBorder.none,
-                                isDense: true,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+  child: Container(
+    height: 46,
+    padding: const EdgeInsets.symmetric(horizontal: 14),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(color: AppColors.border),
+    ),
+    child: Row(
+      children: [
+        Icon(Icons.search_rounded, color: AppColors.textSecondary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: TextField(
+            onChanged: (v) => controller.searchText.value = v,
+            style: const TextStyle(color: AppColors.textPrimary),
+            decoration: InputDecoration(
+              hintText: 'search_hint'.tr,
+              hintStyle: TextStyle(color: AppColors.textMuted),
+              filled: false,
+              fillColor: Colors.transparent,
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+              focusedErrorBorder: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
+              isDense: true,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
                   const SizedBox(width: 8),
                   InkWell(
                     onTap: () => _openFilterSheet(context),
@@ -141,6 +150,11 @@ class _SearchResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Khusus Puisi: gunakan layout tipografi estetis
+    if (book.category == 'Puisi') {
+      return _PoetrySearchResultTile(book: book, onTap: onTap);
+    }
+
     return GestureDetector(
       onTap: onTap,
       child: Row(
@@ -217,6 +231,176 @@ class _SearchResultTile extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _PoetrySearchResultTile extends StatelessWidget {
+  final BookModel book;
+  final VoidCallback onTap;
+  const _PoetrySearchResultTile({required this.book, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final themeColor = _getThemeColor(book.category, book.tags);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          gradient: LinearGradient(
+            colors: [
+              themeColor.withValues(alpha: 0.1),
+              themeColor.withValues(alpha: 0.03),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(color: themeColor.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Thumbnail tipografi
+            Container(
+              width: 64,
+              height: 88,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                gradient: LinearGradient(
+                  colors: [
+                    themeColor.withValues(alpha: 0.15),
+                    themeColor.withValues(alpha: 0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(color: themeColor.withValues(alpha: 0.3)),
+              ),
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: 3,
+                      decoration: BoxDecoration(
+                        color: themeColor,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          bottomLeft: Radius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: Icon(
+                      Icons.format_quote_rounded,
+                      color: themeColor.withValues(alpha: 0.5),
+                      size: 28,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: themeColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.format_quote_rounded, size: 10, color: themeColor),
+                            const SizedBox(width: 3),
+                            Text(
+                              'Puisi',
+                              style: TextStyle(
+                                color: themeColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    book.title,
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    book.author,
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                  ),
+                  const SizedBox(height: 8),
+                  if (book.tags.isNotEmpty)
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: book.tags.take(3).map((tag) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: themeColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: themeColor.withValues(alpha: 0.2)),
+                          ),
+                          child: Text(
+                            tag,
+                            style: TextStyle(
+                              color: themeColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                ],
+              ),
+            ),
+            RatingStars(rating: book.rating),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getThemeColor(String category, List<String> tags) {
+    if (tags.isEmpty) return AppColors.badgePuisi;
+    final tag = tags.first.toLowerCase();
+    if (tag.contains('cinta') || tag.contains('romantis') || tag.contains('love')) {
+      return const Color(0xFFE91E63);
+    }
+    if (tag.contains('malam') || tag.contains('gelap') || tag.contains('night')) {
+      return const Color(0xFF673AB7);
+    }
+    if (tag.contains('alam') || tag.contains('nature') || tag.contains('hijau')) {
+      return const Color(0xFF4CAF50);
+    }
+    if (tag.contains('sedih') || tag.contains('galau') || tag.contains('duka')) {
+      return const Color(0xFF2196F3);
+    }
+    if (tag.contains('harapan') || tag.contains('semangat') || tag.contains('motivasi')) {
+      return const Color(0xFFFF9800);
+    }
+    return AppColors.badgePuisi;
   }
 }
 

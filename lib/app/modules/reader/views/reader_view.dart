@@ -41,7 +41,7 @@ class ReaderView extends GetView<ReaderController> {
           ),
           body: SingleChildScrollView(
             controller: controller.scrollController,
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 48),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -54,19 +54,23 @@ class ReaderView extends GetView<ReaderController> {
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     fontStyle: FontStyle.italic,
-                    height: 1.3,
+                    height: 1.4,
                     color: colors.textColor,
+                    letterSpacing: 0.2,
                   ),
                 ),
-                const SizedBox(height: 24),
-                Text(
+                const SizedBox(height: 28),
+                // Konten bab dengan tipografi yang dirapikan
+                SelectableText(
                   chapter.content,
-                  style: controller.font.value.textStyle(
+                  style: controller.fontTextStyle(
                     fontSize: controller.fontSize.value,
                     color: colors.textColor,
+                    height: 1.8, // line spacing yang lebih longgar
                   ),
+                  textAlign: TextAlign.justify,
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 40),
                 _ChapterNavigation(controller: controller),
               ],
             ),

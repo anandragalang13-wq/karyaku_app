@@ -179,7 +179,27 @@ class DetailBukuController extends GetxController {
     }
   }
 
-  void startReading() => Get.toNamed(Routes.READER, arguments: book);
+  void startReading() {
+    // Navigasi ke reader yang sesuai berdasarkan tipe karya
+    if (book.category == 'Puisi') {
+      // Convert BookModel to WorkModel untuk PoetryReaderView
+      final work = WorkModel(
+        id: book.id,
+        authorId: book.authorId,
+        authorName: book.author,
+        title: book.title,
+        type: WorkType.puisi,
+        cover: book.coverAsset,
+        content: book.synopsis, // Untuk puisi, konten ada di synopsis/content
+        synopsis: book.synopsis,
+        tags: book.tags,
+        createdAt: DateTime.now(),
+      );
+      Get.toNamed(Routes.POETRY_READER, arguments: work);
+    } else {
+      Get.toNamed(Routes.READER, arguments: book);
+    }
+  }
 
   /// Status login pengguna saat ini. Hanya bergantung pada sesi Supabase
   /// (`isLoggedIn`), BUKAN pada `currentUser` (profil dari tabel `users`),

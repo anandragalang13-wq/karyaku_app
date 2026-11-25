@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -49,11 +47,7 @@ class TambahPuisiView extends GetView<TambahPuisiController> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
           children: [
-            // Cover Upload
-            _buildCoverSection(),
-            const SizedBox(height: 20),
-
-            // Judul
+            // Judul Puisi
             _buildLabel('Judul Puisi'),
             const SizedBox(height: 8),
             TextFormField(
@@ -69,26 +63,13 @@ class TambahPuisiView extends GetView<TambahPuisiController> {
             ),
             const SizedBox(height: 20),
 
-            // Sinopsis (opsional)
-            _buildLabel('Sinopsis (Opsional)'),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: controller.sinopsisController,
-              maxLines: 3,
-              decoration: _inputDecoration(
-                'Ringkasan singkat puisi...',
-                Icons.description_rounded,
-              ),
-            ),
-            const SizedBox(height: 20),
-
             // Isi Puisi
             _buildLabel('Isi Puisi'),
             const SizedBox(height: 8),
             TextFormField(
               controller: controller.isiPuisiController,
-              maxLines: 12,
-              minLines: 6,
+              maxLines: 14,
+              minLines: 8,
               decoration: _inputDecoration(
                 'Tulis puisi Anda di sini...\n\nGunakan Enter untuk baris baru',
                 Icons.edit_note_rounded,
@@ -100,13 +81,11 @@ class TambahPuisiView extends GetView<TambahPuisiController> {
             ),
             const SizedBox(height: 20),
 
-            // Tags
-            _buildLabel('Tag (Maks. 5, pisahkan dengan koma atau Enter)'),
+            // Tags (opsional)
+            _buildLabel('Tag (Opsional, Maks. 5)'),
             const SizedBox(height: 8),
             _buildTagInput(),
-            const SizedBox(height: 20),
-
-            // Preview tags
+            const SizedBox(height: 8),
             Obx(() => controller.tags.isNotEmpty
                 ? Wrap(
                     spacing: 8,
@@ -221,89 +200,6 @@ class TambahPuisiView extends GetView<TambahPuisiController> {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: AppColors.danger),
       ),
-    );
-  }
-
-  Widget _buildCoverSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildLabel('Sampul Puisi'),
-        const SizedBox(height: 8),
-        Obx(() {
-          final hasImage = controller.coverImagePath != null;
-          return GestureDetector(
-            onTap: controller.pickCoverImage,
-            child: Container(
-              height: 180,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
-                image: hasImage
-                    ? DecorationImage(
-                        image: FileImage(File(controller.coverImagePath!)),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-              child: hasImage
-                  ? Stack(
-                      children: [
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: CircleAvatar(
-                            radius: 14,
-                            backgroundColor: Colors.black54,
-                            child: IconButton(
-                              icon: const Icon(Icons.close, size: 16, color: Colors.white),
-                              onPressed: () {
-                                controller.clearCover();
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add_photo_alternate_rounded,
-                            size: 48, color: AppColors.textSecondary),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Ketuk untuk pilih gambar sampul',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Rekomendasi: 3:4 (misal 600x800 px)',
-                          style: TextStyle(
-                            color: AppColors.textSecondary.withValues(alpha: 0.6),
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-          );
-        }),
-        if (controller.coverImageLabel.value.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Text(
-            'File: ${controller.coverImageLabel.value}',
-            style: TextStyle(
-              fontSize: 11,
-              color: AppColors.textSecondary.withValues(alpha: 0.7),
-            ),
-          ),
-        ],
-      ],
     );
   }
 

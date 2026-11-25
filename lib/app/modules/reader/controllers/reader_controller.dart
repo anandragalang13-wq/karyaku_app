@@ -1,11 +1,16 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../data/chapter_content.dart';
 import '../../../data/models/book_model.dart';
+import '../../../data/models/work_model.dart';
 import '../../../data/novel_chapters.dart';
 import '../../../services/book_service.dart';
 import '../../../services/reading_prefs_service.dart';
+import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 
 /// Controller halaman membaca (Reader): navigasi bab novel, panel
@@ -144,4 +149,89 @@ class ReaderController extends GetxController {
   void setTheme(ReaderTheme t) => _prefs.setTheme(t);
   void setFont(ReaderFont f) => _prefs.setFont(f);
   void setFontSize(double v) => _prefs.setFontSize(v);
+
+  /// Dapatkan TextStyle dengan height kustom (override height bawaan font).
+  TextStyle fontTextStyle({
+    required double fontSize,
+    required Color color,
+    double height = 1.7,
+  }) {
+    switch (_prefs.font.value) {
+      case ReaderFont.merriweather:
+        return GoogleFonts.merriweather(fontSize: fontSize, color: color, height: height);
+      case ReaderFont.inter:
+        return GoogleFonts.inter(fontSize: fontSize, color: color, height: height);
+      case ReaderFont.georgia:
+        return GoogleFonts.notoSerif(fontSize: fontSize, color: color, height: height);
+    }
+  }
+
+  /// Bagikan karya (novel/cerpen/puisi) ke aplikasi lain.
+  Future<void> shareWork(dynamic work) async {
+    String title = '';
+    String author = '';
+    String link = '';
+
+    if (work is BookModel) {
+      title = work.title;
+      author = work.author;
+      link = 'karyaku://book/${work.id}';
+    } else if (work is WorkModel) {
+      title = work.title;
+      author = work.authorName ?? 'Penulis';
+      link = 'karyaku://book/${work.id}';
+    }
+
+    final text = 'Baca "$title" karya $author di KARYAKU: $link';
+    try {
+      await SharePlus.instance.share(ShareParams(text: text));
+    } catch (e) {
+      Get.snackbar(
+        'Gagal Membagikan',
+        '$e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade400,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// Toggle bookmark untuk karya.
+  Future<void> toggleBookmark(dynamic work) async {
+    if (!Get.isRegistered<BookService>()) return;
+    final service = Get.find<BookService>();
+    final bookId = work is BookModel ? work.id : (work as WorkModel).id;
+    final title = work is BookModel ? work.title : (work as WorkModel).title;
+
+    try {
+      final isSaved = await service.isSaved(bookId);
+      if (isSaved) {
+        await service.removeFromCollection(bookId);
+        Get.snackbar(
+          'Dihapus dari Simpanan',
+          '"$title" dihapus dari daftar simpanan.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.primaryNavy,
+          colorText: Colors.white,
+        );
+      } else {
+        await service.addToCollection(bookId);
+        Get.snackbar(
+          'Disimpan',
+          '"$title" ditambahkan ke daftar simpanan.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.success,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Gagal',
+        '$e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade400,
+        colorText: Colors.white,
+      );
+    }
+  }
 }

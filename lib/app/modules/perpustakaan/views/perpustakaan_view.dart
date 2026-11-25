@@ -40,24 +40,7 @@ class PerpustakaanView extends GetView<PerpustakaanController> {
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                           color: AppColors.textPrimary)),
-                  const Spacer(),
-                  // Pencarian: membawa user ke halaman Temukan.
-                  InkWell(
-                    onTap: controller.openSearch,
-                    borderRadius: BorderRadius.circular(24),
-                    child: Container(
-                      width: 38,
-                      height: 38,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: const Icon(Icons.search_rounded,
-                          size: 20, color: AppColors.primaryNavy),
-                    ),
-                  ),
+                          
                 ],
               ),
             ),

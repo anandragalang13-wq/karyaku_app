@@ -1,4 +1,6 @@
+import 'package:get/get.dart';
 import 'package:get/get_navigation/src/routes/get_route.dart';
+import 'package:karyaku_app/app/data/models/work_model.dart';
 
 import '../modules/detail_buku/bindings/detail_buku_binding.dart';
 import '../modules/detail_buku/views/detail_buku_view.dart';
@@ -20,6 +22,7 @@ import '../modules/progres_cerita/bindings/progres_cerita_binding.dart';
 import '../modules/progres_cerita/views/progres_cerita_view.dart';
 import '../modules/reader/bindings/reader_binding.dart';
 import '../modules/reader/views/reader_view.dart';
+import '../modules/reader/views/poetry_reader_view.dart';
 import '../modules/register/bindings/register_binding.dart';
 import '../modules/register/views/register_view.dart';
 import '../modules/splash/bindings/splash_binding.dart';
@@ -94,6 +97,11 @@ class AppPages {
     GetPage(
       name: Routes.READER,
       page: () => const ReaderView(),
+      binding: ReaderBinding(),
+    ),
+    GetPage(
+      name: Routes.POETRY_READER,
+      page: () => PoetryReaderView(work: Get.arguments as WorkModel),
       binding: ReaderBinding(),
     ),
     GetPage(
