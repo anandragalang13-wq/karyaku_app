@@ -40,7 +40,41 @@ class AppColors {
     }
   }
 
+  static Color darkBadgeForCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'novel':
+        return darkBadgeNovel;
+      case 'puisi':
+        return darkBadgePuisi;
+      case 'cerpen':
+        return darkBadgeCerpen;
+      default:
+        return darkPrimary;
+    }
+  }
+
   static const Color readerLightBg = Color(0xFFFFFFFF);
   static const Color readerSepiaBg = Color(0xFFEFE3CC);
   static const Color readerDarkBg = Color(0xFF121212);
+
+  // ===== Dark Theme Colors =====
+  static const Color darkBackground = Color(0xFF0B1526);
+  static const Color darkSurface = Color(0xFF162036);
+  static const Color darkBorder = Color(0xFF2A3A5A);
+
+  static const Color darkTextPrimary = Color(0xFFF1F5F9);
+  static const Color darkTextSecondary = Color(0xFF94A3B8);
+  static const Color darkTextMuted = Color(0xFF64748B);
+
+  static const Color darkPrimary = Color(0xFF3B82F6);
+  static const Color darkAccentOrange = Color(0xFFF59E0B);
+  static const Color darkAccentBlue = Color(0xFF60A5FA);
+  static const Color darkAccentGreen = Color(0xFF34D399);
+  static const Color darkAccentPurple = Color(0xFFA78BFA);
+  static const Color darkDanger = Color(0xFFF87171);
+  static const Color darkStar = Color(0xFFFBBF24);
+
+  static const Color darkBadgeNovel = Color(0xFF60A5FA);
+  static const Color darkBadgePuisi = Color(0xFF818CF8);
+  static const Color darkBadgeCerpen = Color(0xFF4ADE80);
 }

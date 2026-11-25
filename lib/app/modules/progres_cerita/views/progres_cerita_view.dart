@@ -68,9 +68,79 @@ class ProgresCeritaView extends GetView<ProgresCeritaController> {
         );
       }),
       // Sementara mengedit bab, aksi utama pindah ke dalam kartu edit
-      // (Simpan/Batal) sehingga tombol "Tambah Bab Baru" tidak muncul.
+      // (Simpan/Batal) sehingga tombol aksi tidak muncul.
       bottomNavigationBar: Obx(() {
         if (controller.isEditing) return const SizedBox.shrink();
+
+        final work = controller.currentWork;
+        if (work == null) return const SizedBox.shrink();
+
+        final actions = <Widget>[];
+
+        // Tombol Tambah Bab Baru (hanya jika bisa menulis)
+        if (controller.canWrite) {
+          actions.add(
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: !controller.isLoading.value
+                    ? controller.openAddChapter
+                    : null,
+                icon: const Icon(Icons.add_rounded, size: 18),
+                label: Text('story_progress_add_chapter'.tr),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accentBlue,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor:
+                      AppColors.accentBlue.withValues(alpha: 0.4),
+                  disabledForegroundColor: Colors.white70,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
+            ),
+          );
+        }
+
+        // Tombol Publikasikan (hanya jika draft dan bisa di-submit)
+        if (controller.canPublish) {
+          if (controller.canWrite) actions.add(const SizedBox(width: 12));
+          actions.add(
+            Expanded(
+              flex: controller.canWrite ? 1 : 2,
+              child: Obx(
+                () => ElevatedButton.icon(
+                  onPressed: controller.isSaving.value ? null : controller.publishWork,
+                  icon: controller.isSaving.value
+                      ? const SizedBox.shrink()
+                      : const Icon(Icons.rocket_launch_rounded, size: 18),
+                  label: controller.isSaving.value
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2.2, color: Colors.white),
+                        )
+                      : Text(controller.isPublished ? 'sudah_terbit'.tr : 'add_work_publish'.tr),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: controller.isPublished
+                        ? AppColors.success
+                        : AppColors.accentGreen,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor:
+                        AppColors.accentGreen.withValues(alpha: 0.4),
+                    disabledForegroundColor: Colors.white70,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        if (actions.isEmpty) return const SizedBox.shrink();
 
         return SafeArea(
           child: Container(
@@ -79,23 +149,7 @@ class ProgresCeritaView extends GetView<ProgresCeritaController> {
               color: AppColors.surface,
               border: Border(top: BorderSide(color: AppColors.border)),
             ),
-            child: ElevatedButton.icon(
-              onPressed: controller.canWrite && !controller.isLoading.value
-                  ? controller.openAddChapter
-                  : null,
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: Text('story_progress_add_chapter'.tr),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accentBlue,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor:
-                    AppColors.accentBlue.withValues(alpha: 0.4),
-                disabledForegroundColor: Colors.white70,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
-              ),
-            ),
+            child: Row(children: actions),
           ),
         );
       }),
@@ -359,14 +413,18 @@ class _ChapterCard extends StatelessWidget {
                     )
                   else
                     const SizedBox.shrink(),
-                  if (controller.canWrite)
+                  if (controller.canWrite) ...[
                     _CardAction(
                       icon: Icons.edit_rounded,
                       label: 'story_progress_edit'.tr,
                       onTap: () => controller.startEdit(chapter),
-                    )
-                  else
-                    const SizedBox.shrink(),
+                    ),
+                    _CardAction(
+                      icon: Icons.delete_outline_rounded,
+                      label: 'story_progress_delete'.tr,
+                      onTap: () => controller.deleteChapter(chapter.number),
+                    ),
+                  ],
                 ],
               ),
             ),

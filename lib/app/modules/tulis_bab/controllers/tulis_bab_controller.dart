@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 
 import '../../../data/chapter_content.dart';
 import '../../../data/models/work_model.dart';
@@ -11,7 +14,7 @@ import '../../../services/book_service.dart';
 /// kolom `books.content` beserta jumlah bab-nya.
 class TulisBabController extends GetxController {
   final judulController = TextEditingController();
-  final isiController = TextEditingController();
+  final quillController = QuillController.basic();
   final RxBool isSaving = false.obs;
 
   WorkModel? _work;
@@ -38,7 +41,7 @@ class TulisBabController extends GetxController {
   @override
   void onClose() {
     judulController.dispose();
-    isiController.dispose();
+    quillController.dispose();
     super.onClose();
   }
 
@@ -46,7 +49,7 @@ class TulisBabController extends GetxController {
     final work = _work;
     if (work == null) return;
 
-    final body = isiController.text.trim();
+    final body = quillController.document.toPlainText().trim();
     if (body.isEmpty) {
       Get.snackbar(
         'chapter_editor_title'.tr,
@@ -61,11 +64,12 @@ class TulisBabController extends GetxController {
     isSaving.value = true;
     try {
       final number = chapterNumber;
+      final bodyJson = jsonEncode(quillController.document.toDelta().toJson());
       final newContent = ChapterContent.append(
         content: work.content,
         number: number,
         title: judulController.text.trim(),
-        body: body,
+        body: bodyJson,
       );
 
       await Get.find<BookService>().saveChapter(

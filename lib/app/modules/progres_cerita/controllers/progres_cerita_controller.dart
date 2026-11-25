@@ -5,6 +5,7 @@ import '../../../data/chapter_content.dart';
 import '../../../data/models/work_model.dart';
 import '../../../routes/app_routes.dart';
 import '../../../services/book_service.dart';
+import '../../../theme/app_colors.dart';
 
 /// Controller halaman "Edit Karya" / "Progres Cerita".
 ///
@@ -40,10 +41,14 @@ class ProgresCeritaController extends GetxController {
   WorkModel? get currentWork => work.value;
 
   /// Bab-bab yang sudah tersimpan pada karya ini.
+  /// Diurutkan secara berurutan: Bab 1 di posisi teratas.
   List<ChapterBlock> get chapters {
     final w = work.value;
     if (w == null) return const [];
-    return ChapterContent.parse(w.content);
+    final parsed = ChapterContent.parse(w.content);
+    // Pastikan urutan: Bab 1, 2, 3... (parse sudah mengembalikan berurutan)
+    parsed.sort((a, b) => a.number.compareTo(b.number));
+    return parsed;
   }
 
   /// Bab terakhir yang sudah ditulis (null bila belum ada satupun).
@@ -64,6 +69,12 @@ class ProgresCeritaController extends GetxController {
 
   /// Karya masih boleh ditulis lanjut selama statusnya draft/ditolak (RLS).
   bool get canWrite => work.value?.canEdit() ?? false;
+
+  /// Apakah karya bisa di-submit untuk approval (publish)?
+  bool get canPublish => work.value?.canSubmit() ?? false;
+
+  /// Apakah karya sudah approved (terpublish)?
+  bool get isPublished => work.value?.canPublish() ?? false;
 
   @override
   void onInit() {
@@ -190,6 +201,103 @@ class ProgresCeritaController extends GetxController {
 
     final saved = await Get.toNamed(Routes.TULIS_BAB, arguments: w);
     if (saved == true) await reload();
+  }
+
+  /// Menghapus sebuah bab dari karya.
+  Future<void> deleteChapter(int number) async {
+    final w = work.value;
+    if (w == null || !canWrite) return;
+
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: Text('story_progress_delete_title'.tr),
+        content: Text('story_progress_delete_message'.trArgs(['$number'])),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text('story_progress_cancel'.tr),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: Text('story_progress_delete'.tr, style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    isSaving.value = true;
+    try {
+      final newContent = ChapterContent.remove(content: w.content, number: number);
+      await Get.find<BookService>().saveWorkContent(bookId: w.id, content: newContent);
+      await reload();
+      Get.snackbar(
+        'story_progress_delete_title'.tr,
+        'story_progress_delete_success'.trArgs(['$number']),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.shade400,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'story_progress_update_failed'.tr,
+        '$e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade400,
+        colorText: Colors.white,
+        duration: Duration(seconds: 4),
+      );
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  /// Mengirimkan karya untuk approval (publish).
+  Future<void> publishWork() async {
+    final w = work.value;
+    if (w == null || !canPublish) return;
+
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: Text('story_progress_publish_title'.tr),
+        content: Text('story_progress_publish_message'.trArgs([w.title])),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text('story_progress_cancel'.tr),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: Text('add_work_publish'.tr, style: TextStyle(color: AppColors.accentBlue)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    isSaving.value = true;
+    try {
+      await Get.find<BookService>().submitForApproval(w.id);
+      await reload();
+      Get.snackbar(
+        'story_progress_publish_title'.tr,
+        'story_progress_publish_success'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.shade400,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'story_progress_update_failed'.tr,
+        '$e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade400,
+        colorText: Colors.white,
+        duration: Duration(seconds: 4),
+      );
+    } finally {
+      isSaving.value = false;
+    }
   }
 
   @override

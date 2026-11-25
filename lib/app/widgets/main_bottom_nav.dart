@@ -30,18 +30,20 @@ class MainBottomNav extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            children: List.generate(_items.length, (i) {
-              final selected = i == currentIndex;
-              final item = _items[i];
-              final color =
-                  selected ? AppColors.accentBlue : AppColors.textMuted;
-              return Expanded(
-                child: InkWell(
-                  onTap: () => onTap(i),
+        minimum: const EdgeInsets.only(bottom: 8),
+        child: Row(
+          children: List.generate(_items.length, (i) {
+            final selected = i == currentIndex;
+            final item = _items[i];
+            final color =
+                selected ? AppColors.accentBlue : AppColors.textMuted;
+            return Expanded(
+              child: InkWell(
+                onTap: () => onTap(i),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(item.icon, color: color, size: 24),
@@ -54,13 +56,15 @@ class MainBottomNav extends StatelessWidget {
                           fontWeight:
                               selected ? FontWeight.w600 : FontWeight.w400,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-              );
-            }),
-          ),
+              ),
+            );
+          }),
         ),
       ),
     );

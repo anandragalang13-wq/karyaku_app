@@ -62,20 +62,8 @@ class LoginController extends GetxController {
     }
   }
 
-  void loginWithGoogle() {
-    Get.snackbar(
-      'Masuk dengan Google',
-      'Menghubungkan ke akun Google...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
-  }
-
   void forgotPassword() {
-    Get.snackbar(
-      'Lupa Kata Sandi',
-      'Tautan reset kata sandi akan dikirim ke email Anda.',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    Get.toNamed(Routes.FORGOT_PASSWORD);
   }
 
   void goToRegister() {

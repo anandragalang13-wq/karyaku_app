@@ -6,3 +6,5 @@ build/
 *.iml
 .idea/
 .supabase/
+# Widget Preview related
+.widget_preview/

@@ -114,9 +114,12 @@ class WorkModel {
   bool canPublish() => approvalStatus == ApprovalStatus.approved;
 
   /// Cek apakah masih bisa diedit
+  /// Penulis boleh edit karya selama miliknya (draft, rejected, maupun approved).
+  /// Hanya pending yang dikunci karena menunggu review admin.
   bool canEdit() => 
     approvalStatus == ApprovalStatus.draft || 
-    approvalStatus == ApprovalStatus.rejected;
+    approvalStatus == ApprovalStatus.rejected ||
+    approvalStatus == ApprovalStatus.approved;
 
   factory WorkModel.fromJson(Map<String, dynamic> json) {
     return WorkModel(

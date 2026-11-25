@@ -65,9 +65,26 @@ class DaftarPenulisView extends GetView<DaftarPenulisController> {
                         const SizedBox(height: 6),
                         TextField(
                           controller: controller.penNameController,
-                          decoration: const InputDecoration(
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
                             hintText: 'Nama yang akan tampil di karya Anda',
-                            prefixIcon: Icon(Icons.badge_outlined),
+                            hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                            prefixIcon: Icon(Icons.badge_outlined, color: Colors.white.withOpacity(0.7)),
+                            filled: true,
+                            fillColor: AppColors.primaryNavy,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: AppColors.primaryNavyLight.withOpacity(0.5)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: AppColors.accentOrange, width: 2),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -76,8 +93,25 @@ class DaftarPenulisView extends GetView<DaftarPenulisController> {
                         TextField(
                           controller: controller.bioController,
                           maxLines: 3,
-                          decoration: const InputDecoration(
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
                             hintText: 'Ceritakan sedikit tentang Anda sebagai penulis...',
+                            hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                            filled: true,
+                            fillColor: AppColors.primaryNavy,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: AppColors.primaryNavyLight.withOpacity(0.5)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: AppColors.accentOrange, width: 2),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),

@@ -87,11 +87,15 @@ class _BerandaBodyState extends State<_BerandaBody> {
   // Pencarian langsung (live search) di halaman Beranda.
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+  final RxList<WorkModel> _searchResults = <WorkModel>[].obs;
+  final RxBool _showSearchResults = false.obs;
+  final RxBool _isSearching = false.obs;
 
   @override
   void initState() {
     super.initState();
     _searchFocusNode.addListener(_onSearchFocusChanged);
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
@@ -99,18 +103,42 @@ class _BerandaBodyState extends State<_BerandaBody> {
     _searchFocusNode
       ..removeListener(_onSearchFocusChanged)
       ..dispose();
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }
 
-  void _onSearchChanged(String value) => setState(() {});
-
   void _onSearchFocusChanged() => setState(() {});
+
+  void _onSearchChanged() {
+    final query = _searchController.text.trim().toLowerCase();
+    if (query.isEmpty) {
+      _showSearchResults.value = false;
+      _searchResults.clear();
+      return;
+    }
+    _isSearching.value = true;
+    // Filter dari allWorks yang sudah dimuat
+    final allWorks = widget.controller.allWorks;
+    final results = allWorks.where((work) {
+      final title = work.title.toLowerCase();
+      final author = work.authorName?.toLowerCase() ?? '';
+      final tags = work.tags.map((t) => t.toLowerCase()).join(' ');
+      return title.contains(query) ||
+          author.contains(query) ||
+          tags.contains(query);
+    }).take(10).toList();
+    _searchResults.assignAll(results);
+    _showSearchResults.value = true;
+    _isSearching.value = false;
+  }
 
   /// Membersihkan kata kunci & menutup hasil pencarian.
   void _clearSearch() {
     _searchController.clear();
     _searchFocusNode.unfocus();
+    _searchResults.clear();
+    _showSearchResults.value = false;
     setState(() {});
   }
 
@@ -144,8 +172,6 @@ class _BerandaBodyState extends State<_BerandaBody> {
     ];
   }
 
-
-
   // ============================================================
   // PILIHAN TERBAIK
   // ============================================================
@@ -158,12 +184,19 @@ class _BerandaBodyState extends State<_BerandaBody> {
       return allWorks.take(6).toList();
     }
 
-    return allWorks
+    final filtered = allWorks
         .where(
           (work) => work.tags.contains(genre),
         )
         .take(6)
         .toList();
+
+    // Fallback: jika genre dipilih tapi tidak ada karya dengan tag tsb,
+    // tampilkan 6 karya pertama sebagai fallback
+    if (filtered.isEmpty) {
+      return allWorks.take(6).toList();
+    }
+    return filtered;
   }
 
   // ============================================================
@@ -172,14 +205,48 @@ class _BerandaBodyState extends State<_BerandaBody> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = widget.controller;
+
+    // PENTING: pakai Obx (bukan GetBuilder) karena state controller
+    // berupa variabel reaktif (.obs). GetBuilder hanya rebuild kalau
+    // controller memanggil update(), sehingga spinner tidak pernah hilang.
     return Obx(() {
-      if (widget.controller.isLoading.value) {
-        return const Center(
-          child: CircularProgressIndicator(),
+      if (controller.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (controller.errorMessage.isNotEmpty) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline, size: 48, color: AppColors.danger),
+                const SizedBox(height: 12),
+                Text(
+                  controller.errorMessage.value,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Coba Lagi'),
+                  onPressed: controller.loadBerandaData,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryNavy,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       }
 
-      final allWorks = widget.controller.allWorks;
+      // toList() = salinan, sekaligus memastikan Obx membaca list reaktif.
+      final allWorks = controller.allWorks.toList();
 
       // ========================================================
       // GENRE
@@ -187,12 +254,9 @@ class _BerandaBodyState extends State<_BerandaBody> {
 
       final genres = _buildGenres(allWorks);
 
-      final safeGenreIndex =
-          genres.isEmpty
-              ? 0
-              : (_selectedGenreIndex < genres.length
-                  ? _selectedGenreIndex
-                  : 0);
+      final safeGenreIndex = genres.isEmpty
+          ? 0
+          : (_selectedGenreIndex < genres.length ? _selectedGenreIndex : 0);
 
       // ========================================================
       // PILIHAN TERBAIK
@@ -223,7 +287,14 @@ class _BerandaBodyState extends State<_BerandaBody> {
             // ==================================================
 
             _TopHeader(
-              onSearch: widget.controller.openSearch,
+              controller: controller,
+              searchController: _searchController,
+              searchFocusNode: _searchFocusNode,
+              searchResults: _searchResults,
+              showSearchResults: _showSearchResults,
+              isSearching: _isSearching,
+              onClearSearch: _clearSearch,
+              onOpenResult: _openResult,
             ),
 
             const SizedBox(height: 22),
@@ -255,7 +326,7 @@ class _BerandaBodyState extends State<_BerandaBody> {
             // KARYA PILIHAN
             _WorkHorizontalList(
               works: forYouWorks,
-              onTap: widget.controller.openWorkDetail,
+              onTap: controller.openWorkDetail,
             ),
 
             const SizedBox(height: 30),
@@ -273,7 +344,7 @@ class _BerandaBodyState extends State<_BerandaBody> {
             // GRID PERINGKAT 2 KOLOM
             _PopularWorkGrid(
               works: popularWorks,
-              onTap: widget.controller.openWorkDetail,
+              onTap: controller.openWorkDetail,
             ),
 
             const SizedBox(height: 30),
@@ -288,11 +359,32 @@ class _BerandaBodyState extends State<_BerandaBody> {
 // HEADER
 // ============================================================
 
-class _TopHeader extends StatelessWidget {
-  final VoidCallback onSearch;
+class _TopHeader extends StatefulWidget {
+  final BerandaController controller;
+  final TextEditingController searchController;
+  final FocusNode searchFocusNode;
+  final RxList<WorkModel> searchResults;
+  final RxBool showSearchResults;
+  final RxBool isSearching;
+  final VoidCallback onClearSearch;
+  final Function(WorkModel) onOpenResult;
 
-  const _TopHeader({required this.onSearch});
+  const _TopHeader({
+    required this.controller,
+    required this.searchController,
+    required this.searchFocusNode,
+    required this.searchResults,
+    required this.showSearchResults,
+    required this.isSearching,
+    required this.onClearSearch,
+    required this.onOpenResult,
+  });
 
+  @override
+  State<_TopHeader> createState() => _TopHeaderState();
+}
+
+class _TopHeaderState extends State<_TopHeader> {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -340,63 +432,137 @@ class _TopHeader extends StatelessWidget {
               ),
 
               const Spacer(),
-
-              // SEARCH — membuka halaman Temukan untuk mencari karya.
-              InkWell(
-                onTap: onSearch,
-                borderRadius: BorderRadius.circular(24),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: const Icon(
-                    Icons.search_rounded,
-                    color: AppColors.primaryNavy,
-                    size: 22,
-                  ),
-                ),
-              ),
             ],
           ),
 
-          const SizedBox(height: 16),
-
-          // KOLOM PENCARIAN — mengetuknya langsung membawa user ke
-          // halaman Temukan supaya bisa mengetik kata kunci.
-          InkWell(
-            onTap: onSearch,
-            borderRadius: BorderRadius.circular(24),
-            child: Container(
-              height: 46,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.border),
+          // KOLOM PENCARIAN LANGSUNG DI BERANDA (Tema Navy konsisten)
+          TextField(
+            controller: widget.searchController,
+            focusNode: widget.searchFocusNode,
+            textInputAction: TextInputAction.search,
+            style: const TextStyle(color: Colors.white),
+            onSubmitted: (value) {
+              if (widget.searchResults.isNotEmpty) {
+                widget.onOpenResult(widget.searchResults.first);
+              }
+            },
+            decoration: InputDecoration(
+              hintText: 'search_hint'.tr,
+              hintStyle: TextStyle(
+                  color: Colors.white.withOpacity(0.6), fontSize: 13),
+              prefixIcon: Icon(Icons.search_rounded,
+                  color: Colors.white.withOpacity(0.7), size: 20),
+              // ValueListenableBuilder: mendengarkan perubahan teks di
+              // TextEditingController (yang bukan variabel reaktif GetX).
+              suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                valueListenable: widget.searchController,
+                builder: (context, value, _) {
+                  if (value.text.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return Obx(() {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (widget.isSearching.value)
+                          const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
+                            ),
+                          )
+                        else
+                          IconButton(
+                            icon: Icon(Icons.clear_rounded,
+                                color: Colors.white.withOpacity(0.7),
+                                size: 20),
+                            onPressed: widget.onClearSearch,
+                          ),
+                      ],
+                    );
+                  });
+                },
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.search_rounded,
-                      size: 20, color: AppColors.textMuted),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'search_hint'.tr,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  ),
-                ],
+              filled: true,
+              fillColor: AppColors.primaryNavy,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
+                borderSide: BorderSide(
+                    color: AppColors.primaryNavyLight.withOpacity(0.5)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
+                borderSide: const BorderSide(
+                    color: AppColors.accentOrange, width: 2),
               ),
             ),
           ),
+
+          // HASIL PENCARIAN (Dropdown)
+          Obx(() {
+            if (!widget.showSearchResults.value ||
+                widget.searchResults.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return Container(
+              margin: const EdgeInsets.only(top: 8),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: widget.searchResults.length,
+                separatorBuilder: (_, __) =>
+                    Divider(height: 1, color: AppColors.border),
+                itemBuilder: (context, index) {
+                  final work = widget.searchResults[index];
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 4),
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: buildWorkCover(work, width: 40, height: 53),
+                    ),
+                    title: Text(
+                      work.title,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(
+                      work.authorName ?? '',
+                      style: TextStyle(
+                          fontSize: 11, color: AppColors.textSecondary),
+                    ),
+                    onTap: () => widget.onOpenResult(work),
+                  );
+                },
+              ),
+            );
+          }),
 
           const SizedBox(height: 16),
 
@@ -467,36 +633,28 @@ class _GenreChips extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: genres.length,
         itemBuilder: (context, index) {
-          final selected =
-              index == selectedIndex;
+          final selected = index == selectedIndex;
 
           return Padding(
             padding: EdgeInsets.only(
               left: index == 0 ? 20 : 8,
-              right:
-                  index == genres.length - 1
-                      ? 20
-                      : 0,
+              right: index == genres.length - 1 ? 20 : 0,
             ),
             child: GestureDetector(
               onTap: () => onSelected(index),
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
                   color: selected
-                      ? AppColors.accentBlue
-                          .withOpacity(0.15)
+                      ? AppColors.accentBlue.withOpacity(0.15)
                       : Colors.grey.shade200,
-                  borderRadius:
-                      BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20),
                   border: selected
                       ? Border.all(
-                          color:
-                              AppColors.accentBlue,
+                          color: AppColors.accentBlue,
                           width: 1.5,
                         )
                       : null,
@@ -505,9 +663,8 @@ class _GenreChips extends StatelessWidget {
                   _genreLabel(genres[index]),
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: selected
-                        ? FontWeight.w700
-                        : FontWeight.w500,
+                    fontWeight:
+                        selected ? FontWeight.w700 : FontWeight.w500,
                     color: selected
                         ? AppColors.accentBlue
                         : AppColors.textPrimary,
@@ -547,8 +704,7 @@ class _WorkHorizontalList extends StatelessWidget {
           width: double.infinity,
           decoration: BoxDecoration(
             color: Colors.grey.shade100,
-            borderRadius:
-                BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: Center(
             child: Text(
@@ -566,42 +722,30 @@ class _WorkHorizontalList extends StatelessWidget {
     return SizedBox(
       // SAMA DENGAN KARTU PILIHAN TERBAIK
       height: 220,
-
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: works.length,
-
         itemBuilder: (context, index) {
           final work = works[index];
 
           return Padding(
             padding: EdgeInsets.only(
               left: index == 0 ? 20 : 12,
-              right:
-                  index == works.length - 1
-                      ? 20
-                      : 0,
+              right: index == works.length - 1 ? 20 : 0,
             ),
-
             child: GestureDetector(
               onTap: () => onTap(work),
-
               child: SizedBox(
                 // UKURAN KARTU SAMA
                 width: 112,
-
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
-
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ==================================================
                     // COVER BUKU
                     // ==================================================
-
                     ClipRRect(
-                      borderRadius:
-                          BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(10),
                       child: buildWorkCover(
                         work,
                         width: 112,
@@ -614,19 +758,14 @@ class _WorkHorizontalList extends StatelessWidget {
                     // ==================================================
                     // JUDUL
                     // ==================================================
-
                     Text(
                       work.title,
                       maxLines: 2,
-                      overflow:
-                          TextOverflow.ellipsis,
-
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 13,
-                        fontWeight:
-                            FontWeight.w700,
-                        color:
-                            AppColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
                       ),
                     ),
 
@@ -635,23 +774,15 @@ class _WorkHorizontalList extends StatelessWidget {
                     // ==================================================
                     // GENRE
                     // ==================================================
-
                     Text(
-                      work.tags.isNotEmpty
-                          ? work.tags.first
-                          : work.authorId,
-
+                      work.tags.isNotEmpty ? work.tags.first : work.authorId,
                       maxLines: 1,
-                      overflow:
-                          TextOverflow.ellipsis,
-
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 11,
-                        color:
-                            Colors.grey.shade600,
+                        color: Colors.grey.shade600,
                       ),
                     ),
-
                   ],
                 ),
               ),
@@ -685,13 +816,10 @@ class _CoverPlaceholder extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         color: Colors.grey.shade300,
-        borderRadius:
-            BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(
-        work.type == WorkType.puisi
-            ? Icons.edit_note
-            : Icons.auto_stories,
+        work.type == WorkType.puisi ? Icons.edit_note : Icons.auto_stories,
         size: width * 0.32,
         color: Colors.grey.shade600,
       ),

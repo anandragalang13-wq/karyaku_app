@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 
 import '../../../theme/app_colors.dart';
 import '../controllers/tambah_karya_controller.dart';
@@ -26,7 +27,7 @@ class TambahKaryaView extends GetView<TambahKaryaController> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: AppColors.accentBlue.withOpacity(0.12),
+                  color: AppColors.accentBlue.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(
@@ -190,28 +191,53 @@ class TambahKaryaView extends GetView<TambahKaryaController> {
             ),
             child: Column(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(color: AppColors.border)),
-                  ),
-                  child: Row(
-                    children: [
-                      _ToolbarIcon(Icons.format_bold_rounded),
-                      _ToolbarIcon(Icons.format_italic_rounded),
-                      _ToolbarIcon(Icons.format_underline_rounded),
-                      _ToolbarIcon(Icons.format_list_bulleted_rounded),
-                      _ToolbarIcon(Icons.format_quote_rounded),
-                    ],
+                QuillSimpleToolbar(
+                  controller: controller.quillController,
+                  config: const QuillSimpleToolbarConfig(
+                    showAlignmentButtons: false,
+                    showBackgroundColorButton: false,
+                    showBoldButton: true,
+                    showCenterAlignment: false,
+                    showClearFormat: true,
+                    showCodeBlock: false,
+                    showColorButton: false,
+                    showDirection: false,
+                    showDividers: false,
+                    showFontFamily: false,
+                    showFontSize: false,
+                    showHeaderStyle: false,
+                    showInlineCode: false,
+                    showItalicButton: true,
+                    showJustifyAlignment: false,
+                    showLeftAlignment: false,
+                    showLink: true,
+                    showListBullets: true,
+                    showListCheck: false,
+                    showListNumbers: true,
+                    showQuote: true,
+                    showRedo: true,
+                    showRightAlignment: false,
+                    showSearchButton: false,
+                    showSmallButton: false,
+                    showStrikeThrough: true,
+                    showSubscript: false,
+                    showSuperscript: false,
+                    showUndo: true,
+                    multiRowsDisplay: false,
+                    toolbarIconAlignment: WrapAlignment.start,
+                    toolbarSectionSpacing: 8,
                   ),
                 ),
-                TextField(
-                  controller: controller.isiCeritaController,
-                  maxLines: 8,
-                  decoration: const InputDecoration(
-                    hintText: 'Mulai menulis ceritamu di sini...',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(12),
+                const Divider(height: 1, thickness: 1, color: AppColors.border),
+                Container(
+                  height: 300,
+                  padding: const EdgeInsets.all(12),
+                  child: QuillEditor.basic(
+                    controller: controller.quillController,
+                    config: QuillEditorConfig(
+                      padding: EdgeInsets.zero,
+                      expands: false,
+                    ),
                   ),
                 ),
               ],
@@ -290,19 +316,6 @@ class _FieldLabel extends StatelessWidget {
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
       ),
-    );
-  }
-}
-
-class _ToolbarIcon extends StatelessWidget {
-  final IconData icon;
-  const _ToolbarIcon(this.icon);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 14),
-      child: Icon(icon, size: 18, color: AppColors.textSecondary),
     );
   }
 }

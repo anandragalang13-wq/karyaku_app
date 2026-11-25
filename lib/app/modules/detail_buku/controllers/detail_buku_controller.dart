@@ -23,6 +23,10 @@ class DetailBukuController extends GetxController {
   /// `user_collections` (lihat [BookService.isSaved]/[addToCollection]).
   final RxBool isBookmarked = false.obs;
 
+  /// Follow state
+  final RxBool isFollowing = false.obs;
+  final RxInt followersCount = 0.obs;
+
   BookService get _books => Get.find<BookService>();
 
   @override
@@ -49,6 +53,7 @@ class DetailBukuController extends GetxController {
       );
     }
     _loadSaveState();
+    _loadFollowState();
     // Mencatat bahwa user pernah membuka karya ini → muncul di tab
     // Histori halaman Perpustakaan (best-effort, tanpa chapter supaya
     // posisi baca lama tidak ditimpa). Semua akses DB dijaga supaya
@@ -56,6 +61,16 @@ class DetailBukuController extends GetxController {
     if (Get.isRegistered<BookService>()) {
       _loadReviews();
       _books.recordReading(bookId: book.id, totalChapters: book.totalChapters);
+    }
+  }
+
+  Future<void> _loadFollowState() async {
+    if (!Get.isRegistered<BookService>() || book.authorId.isEmpty) return;
+    try {
+      isFollowing.value = await _books.isFollowing(book.authorId);
+      followersCount.value = await _books.getFollowersCount(book.authorId);
+    } catch (e) {
+      print('Load follow state error: $e');
     }
   }
 
@@ -180,6 +195,38 @@ class DetailBukuController extends GetxController {
       snackPosition: SnackPosition.BOTTOM,
     );
     Get.toNamed(Routes.LOGIN);
+  }
+
+  /// Follow/unfollow penulis karya ini.
+  Future<void> toggleFollow() async {
+    if (!isLoggedIn) {
+      Get.snackbar(
+        'follow_login_required_title'.tr,
+        'follow_login_required_message'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      Get.toNamed(Routes.LOGIN);
+      return;
+    }
+    if (book.authorId.isEmpty) return;
+
+    final wasFollowing = isFollowing.value;
+    final wasCount = followersCount.value;
+    isFollowing.value = !wasFollowing;
+    followersCount.value = wasFollowing ? wasCount - 1 : wasCount + 1;
+
+    try {
+      final ok = await _books.toggleFollow(book.authorId);
+      if (!ok) {
+        // Rollback on failure
+        isFollowing.value = wasFollowing;
+        followersCount.value = wasCount;
+      }
+    } catch (e) {
+      isFollowing.value = wasFollowing;
+      followersCount.value = wasCount;
+      print('Toggle follow error: $e');
+    }
   }
 
   /// Menambahkan ulasan dari pengguna yang sedang login. Ulasan langsung

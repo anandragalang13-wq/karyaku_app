@@ -17,8 +17,34 @@ class PencarianView extends GetView<PencarianController> {
       body: SafeArea(
         child: Column(
           children: [
+            // Header Halaman Temukan
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'nav_discover'.tr,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Jelajahi dan temukan karya sastra baru',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Search Bar & Filter
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
               child: Row(
                 children: [
                   Expanded(
@@ -26,19 +52,21 @@ class PencarianView extends GetView<PencarianController> {
                       height: 46,
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: AppColors.primaryNavy,
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: AppColors.primaryNavyLight.withOpacity(0.5)),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.search_rounded, color: AppColors.textMuted),
+                          Icon(Icons.search_rounded, color: Colors.white.withOpacity(0.7)),
                           const SizedBox(width: 8),
                           Expanded(
                             child: TextField(
                               onChanged: (v) => controller.searchText.value = v,
+                              style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
                                 hintText: 'search_hint'.tr,
+                                hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
                                 border: InputBorder.none,
                                 isDense: true,
                               ),
@@ -57,7 +85,7 @@ class PencarianView extends GetView<PencarianController> {
                       height: 46,
                       alignment: Alignment.center,
                       decoration: const BoxDecoration(
-                        color: AppColors.primaryNavy,
+                        color: AppColors.accentOrange,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.tune_rounded, color: Colors.white),

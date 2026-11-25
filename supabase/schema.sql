@@ -106,31 +106,61 @@ alter table public.books enable row level security;
 drop policy if exists "books_select" on public.books;
 drop policy if exists "books_insert_own" on public.books;
 drop policy if exists "books_update_own" on public.books;
+drop policy if exists "books_delete_own" on public.books;
+
 -- Publik hanya melihat karya approved; penulis juga melihat karyanya sendiri
 create policy "books_select" on public.books
   for select using (approval_status = 'approved' or author_id = auth.uid());
--- Penulis hanya boleh membuat draft/pending (tidak bisa meng-approve sendiri)
+
+-- Penulis boleh INSERT karya sendiri dengan status draft/pending/approved
+-- (approved diperlukan kalau admin mau insert langsung, tapi normalnya draft/pending)
 create policy "books_insert_own" on public.books
   for insert to authenticated
-  with check (author_id = auth.uid() and approval_status in ('draft', 'pending'));
+  with check (author_id = auth.uid() and approval_status in ('draft', 'pending', 'approved'));
+
+-- Penulis boleh UPDATE karya sendiri (semua status termasuk approved)
 create policy "books_update_own" on public.books
   for update to authenticated
   using (author_id = auth.uid())
-  with check (author_id = auth.uid() and approval_status in ('draft', 'pending'));
--- Penulis hanya boleh menghapus karya miliknya sendiri
-drop policy if exists "books_delete_own" on public.books;
+  with check (author_id = auth.uid() and approval_status in ('draft', 'pending', 'approved'));
+
+-- Penulis boleh DELETE karya sendiri
 create policy "books_delete_own" on public.books
   for delete to authenticated
   using (author_id = auth.uid());
 
+-- Grant eksplisit pada SEMUA kolom yang dipakai aplikasi
 revoke insert, update, delete on public.books from anon, authenticated;
-grant insert (author_id, author, title, category, content, synopsis, tags, cover_asset,
-              status, approval_status, submitted_at, total_chapters, current_chapter)
+grant insert (id, author_id, author, title, category, content, synopsis, tags, cover_asset,
+              status, approval_status, rejection_reason, submitted_at, approved_at,
+              views_count, rating, total_chapters, current_chapter, created_at)
   on public.books to authenticated;
 grant update (title, category, content, synopsis, tags, cover_asset, status,
-              approval_status, submitted_at, total_chapters, current_chapter)
+              approval_status, rejection_reason, submitted_at, approved_at,
+              views_count, rating, total_chapters, current_chapter)
   on public.books to authenticated;
 grant delete on public.books to authenticated;
+
+-- Realtime publication untuk sinkronisasi real-time ke aplikasi
+alter publication supabase_realtime add table public.books;
+
+-- ---------- 2b. TRIGGER: auto-set approved_at saat approval_status jadi 'approved' ----------
+-- Memastikan kolom approved_at selalu terisi saat admin approve karya,
+-- terlepas dari dashboard mana yang digunakan.
+create or replace function public.set_approved_at()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if NEW.approval_status = 'approved' and OLD.approval_status != 'approved' then
+    NEW.approved_at := now();
+  end if;
+  return NEW;
+end $$;
+
+drop trigger if exists trigger_set_approved_at on public.books;
+create trigger trigger_set_approved_at
+  before update on public.books
+  for each row
+  execute function public.set_approved_at();
 
 -- ---------- 3. REVIEWS (ulasan) ----------
 -- book_id sengaja bertipe text agar cocok dengan tipe id tabel books yang

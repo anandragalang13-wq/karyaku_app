@@ -28,9 +28,26 @@ class LoginView extends GetView<LoginController> {
                     TextField(
                       controller: controller.emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
                         hintText: 'Masukkan email Anda',
-                        prefixIcon: Icon(Icons.mail_outline_rounded),
+                        hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                        prefixIcon: Icon(Icons.mail_outline_rounded, color: Colors.white.withOpacity(0.7)),
+                        filled: true,
+                        fillColor: AppColors.primaryNavy,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(color: AppColors.primaryNavyLight.withOpacity(0.5)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(color: AppColors.accentOrange, width: 2),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -40,17 +57,35 @@ class LoginView extends GetView<LoginController> {
                       () => TextField(
                         controller: controller.passwordController,
                         obscureText: controller.isPasswordHidden.value,
+                        style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           hintText: 'Masukkan kata sandi',
-                          prefixIcon: const Icon(Icons.lock_outline_rounded),
+                          hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                          prefixIcon: Icon(Icons.lock_outline_rounded, color: Colors.white.withOpacity(0.7)),
                           suffixIcon: IconButton(
                             icon: Icon(
                               controller.isPasswordHidden.value
                                   ? Icons.visibility_off_outlined
                                   : Icons.visibility_outlined,
                               size: 20,
+                              color: Colors.white.withOpacity(0.7),
                             ),
                             onPressed: controller.togglePasswordVisibility,
+                          ),
+                          filled: true,
+                          fillColor: AppColors.primaryNavy,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: AppColors.primaryNavyLight.withOpacity(0.5)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: AppColors.accentOrange, width: 2),
                           ),
                         ),
                       ),
@@ -64,9 +99,9 @@ class LoginView extends GetView<LoginController> {
                           minimumSize: const Size(0, 32),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
-                        child: const Text(
-                          'Lupa Kata Sandi?',
-                          style: TextStyle(
+                        child: Text(
+                          'login_forgot_password'.tr,
+                          style: const TextStyle(
                               color: AppColors.accentBlue, fontSize: 12.5),
                         ),
                       ),
@@ -101,55 +136,6 @@ class LoginView extends GetView<LoginController> {
                                   ),
                                 )
                               : const Text('Masuk'),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(child: Divider(color: AppColors.border)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Text('atau',
-                              style: TextStyle(
-                                  color: AppColors.textMuted, fontSize: 12)),
-                        ),
-                        Expanded(child: Divider(color: AppColors.border)),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: OutlinedButton(
-                        onPressed: controller.loginWithGoogle,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.textPrimary,
-                          side: const BorderSide(color: AppColors.border),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
-                        ),
-                        // Logo Google + teks diratakan manual supaya
-                        // posisinya rapi dan sejajar di tengah tombol.
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              'assets/images/google_logo.png',
-                              width: 20,
-                              height: 20,
-                              fit: BoxFit.contain,
-                            ),
-                            const SizedBox(width: 10),
-                            const Text(
-                              'Masuk dengan Google',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                     ),

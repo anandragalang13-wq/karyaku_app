@@ -4,6 +4,10 @@ import '../modules/detail_buku/bindings/detail_buku_binding.dart';
 import '../modules/detail_buku/views/detail_buku_view.dart';
 import '../modules/daftar_penulis/bindings/daftar_penulis_binding.dart';
 import '../modules/daftar_penulis/views/daftar_penulis_view.dart';
+import '../modules/email_verification/bindings/email_verification_binding.dart';
+import '../modules/email_verification/views/email_verification_view.dart';
+import '../modules/forgot_password/bindings/forgot_password_binding.dart';
+import '../modules/forgot_password/views/forgot_password_view.dart';
 import '../modules/kelola_karya/bindings/kelola_karya_binding.dart';
 import '../modules/kelola_karya/views/kelola_karya_view.dart';
 import '../modules/login/bindings/login_binding.dart';
@@ -22,6 +26,8 @@ import '../modules/splash/bindings/splash_binding.dart';
 import '../modules/splash/views/splash_view.dart';
 import '../modules/tambah_karya/bindings/tambah_karya_binding.dart';
 import '../modules/tambah_karya/views/tambah_karya_view.dart';
+import '../modules/tambah_puisi/bindings/tambah_puisi_binding.dart';
+import '../modules/tambah_puisi/views/tambah_puisi_view.dart';
 import '../modules/tulis_bab/bindings/tulis_bab_binding.dart';
 import '../modules/tulis_bab/views/tulis_bab_view.dart';
 import 'app_routes.dart';
@@ -44,6 +50,16 @@ class AppPages {
       name: Routes.REGISTER,
       page: () => const RegisterView(),
       binding: RegisterBinding(),
+    ),
+    GetPage(
+      name: Routes.FORGOT_PASSWORD,
+      page: () => const ForgotPasswordView(),
+      binding: ForgotPasswordBinding(),
+    ),
+    GetPage(
+      name: Routes.EMAIL_VERIFICATION,
+      page: () => const EmailVerificationView(),
+      binding: EmailVerificationBinding(),
     ),
     GetPage(
       name: Routes.MAIN,
@@ -84,6 +100,11 @@ class AppPages {
       name: Routes.TAMBAH_KARYA,
       page: () => const TambahKaryaView(),
       binding: TambahKaryaBinding(),
+    ),
+    GetPage(
+      name: Routes.TAMBAH_PUISI,
+      page: () => const TambahPuisiView(),
+      binding: TambahPuisiBinding(),
     ),
     GetPage(
       name: Routes.DAFTAR_PENULIS,

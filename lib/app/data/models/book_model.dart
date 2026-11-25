@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 import '../book_covers.dart';
 
@@ -7,6 +6,7 @@ class BookModel {
   final String id;
   final String title;
   final String author;
+  final String authorId;
   final String category;
   final double rating;
   final int views;
@@ -18,7 +18,7 @@ class BookModel {
   final double progress;
   final List<Color> coverGradient;
   final IconData coverIcon;
-  final String? _coverAsset;   // <-- tambah ini
+  final String? _coverAsset;
 
   /// Isi karya (blok-blok bab) apa adanya dari kolom `books.content`.
   /// Sumber tunggal isi baca di halaman Reader — tiap karya punya isi
@@ -29,6 +29,7 @@ class BookModel {
     required this.id,
     required this.title,
     required this.author,
+    this.authorId = '',
     required this.category,
     required this.rating,
     required this.views,
@@ -40,7 +41,7 @@ class BookModel {
     this.progress = 0.0,
     required this.coverGradient,
     this.coverIcon = Icons.menu_book_rounded,
-    String? coverAsset,          // <-- tambah ini
+    String? coverAsset,
     this.content = '',
   }) : _coverAsset = coverAsset;
 
@@ -62,6 +63,7 @@ class BookModel {
       id: json['id']?.toString() ?? '',
       title: title,
       author: json['author'] ?? '',
+      authorId: json['author_id']?.toString() ?? '',
       category: json['category'] ?? 'Novel',
       rating: (json['rating'] != null) ? (json['rating'] as num).toDouble() : 0.0,
       views: json['views_count'] ?? json['views'] ?? 0,
@@ -85,6 +87,7 @@ class BookModel {
       'id': id,
       'title': title,
       'author': author,
+      'author_id': authorId,
       'category': category,
       'rating': rating,
       'views_count': views,
@@ -93,7 +96,7 @@ class BookModel {
       'synopsis': synopsis,
       'tags': tags,
       'status': status,
-      'cover_asset': coverAsset,   // <-- tambah ini
+      'cover_asset': coverAsset,
       'content': content,
     };
   }
@@ -102,6 +105,7 @@ class BookModel {
     String? id,
     String? title,
     String? author,
+    String? authorId,
     String? category,
     double? rating,
     int? views,
@@ -113,13 +117,14 @@ class BookModel {
     double? progress,
     List<Color>? coverGradient,
     IconData? coverIcon,
-    String? coverAsset,    // <-- tambah ini
+    String? coverAsset,
     String? content,
   }) {
     return BookModel(
       id: id ?? this.id,
       title: title ?? this.title,
       author: author ?? this.author,
+      authorId: authorId ?? this.authorId,
       category: category ?? this.category,
       rating: rating ?? this.rating,
       views: views ?? this.views,
@@ -131,7 +136,7 @@ class BookModel {
       progress: progress ?? this.progress,
       coverGradient: coverGradient ?? this.coverGradient,
       coverIcon: coverIcon ?? this.coverIcon,
-      coverAsset: coverAsset ?? this.coverAsset,  // <-- tambah ini
+      coverAsset: coverAsset ?? this.coverAsset,
       content: content ?? this.content,
     );
   }

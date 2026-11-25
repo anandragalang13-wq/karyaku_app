@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart' as image_picker;
+import 'package:flutter_quill/flutter_quill.dart';
 
 import '../../../data/models/work_model.dart';
 import '../../../services/auth_service.dart';
@@ -10,11 +13,11 @@ class TambahKaryaController extends GetxController {
   // Form Controllers
   final judulController = TextEditingController();
   final sinopsisController = TextEditingController();
-  final isiCeritaController = TextEditingController();
   final tagInputController = TextEditingController();
+  final quillController = QuillController.basic();
 
-  // Kategori
-  final categories = const ['Novel', 'Puisi', 'Cerpen'];
+  // Kategori (Puisi punya halaman sendiri)
+  final categories = const ['Novel', 'Cerpen'];
   final selectedCategoryIndex = 0.obs;
 
   // Tags
@@ -35,7 +38,7 @@ class TambahKaryaController extends GetxController {
   void onClose() {
     judulController.dispose();
     sinopsisController.dispose();
-    isiCeritaController.dispose();
+    quillController.dispose();
     tagInputController.dispose();
     super.onClose();
   }
@@ -43,8 +46,6 @@ class TambahKaryaController extends GetxController {
   WorkType get selectedType {
     switch (selectedCategoryIndex.value) {
       case 1:
-        return WorkType.puisi;
-      case 2:
         return WorkType.cerpen;
       default:
         return WorkType.novel;
@@ -52,7 +53,12 @@ class TambahKaryaController extends GetxController {
   }
 
   void selectCategory(int index) {
-    selectedCategoryIndex.value = index;
+    // Puisi (index 1) has its own dedicated page
+    if (index == 1) {
+      Get.toNamed('/tambah-puisi');
+      return;
+    }
+    selectedCategoryIndex.value = index == 2 ? 1 : index; // Map Cerpen to index 1 in reduced list
   }
 
   void addTag(String value) {
@@ -102,7 +108,8 @@ class TambahKaryaController extends GetxController {
       );
       return false;
     }
-    if (isiCeritaController.text.trim().isEmpty) {
+    final content = quillController.document.toPlainText().trim();
+    if (content.isEmpty) {
       Get.snackbar(
         'Validasi Gagal',
         'Isi cerita tidak boleh kosong',
@@ -117,7 +124,7 @@ class TambahKaryaController extends GetxController {
   void _resetForm() {
     judulController.clear();
     sinopsisController.clear();
-    isiCeritaController.clear();
+    quillController.clear();
     tagInputController.clear();
     tags.clear();
     selectedCategoryIndex.value = 0;
@@ -138,10 +145,12 @@ class TambahKaryaController extends GetxController {
       coverUrl = await service.uploadCover(_coverFile!);
     }
 
+    final content = jsonEncode(quillController.document.toDelta().toJson());
+
     await service.saveWork(
       title: judulController.text.trim(),
       category: selectedType.label,
-      content: isiCeritaController.text.trim(),
+      content: content,
       synopsis: sinopsisController.text,
       tags: tags.toList(),
       coverUrl: coverUrl,

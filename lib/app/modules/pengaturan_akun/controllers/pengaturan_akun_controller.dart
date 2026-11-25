@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../services/locale_service.dart';
 import '../../../services/reading_prefs_service.dart';

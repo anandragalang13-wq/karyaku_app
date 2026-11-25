@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 
 import '../../../data/models/work_model.dart';
 import '../../../theme/app_colors.dart';
@@ -79,7 +80,7 @@ class TulisBabView extends GetView<TulisBabController> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.accentOrange.withOpacity(0.12),
+              color: AppColors.accentOrange.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -115,16 +116,58 @@ class TulisBabView extends GetView<TulisBabController> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.border),
           ),
-          child: TextField(
-            controller: controller.isiController,
-            maxLines: 14,
-            minLines: 8,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: InputDecoration(
-              hintText: 'chapter_editor_content_hint'.tr,
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.all(14),
-            ),
+          child: Column(
+            children: [
+              QuillSimpleToolbar(
+                controller: controller.quillController,
+                config: const QuillSimpleToolbarConfig(
+                  showAlignmentButtons: false,
+                  showBackgroundColorButton: false,
+                  showBoldButton: true,
+                  showCenterAlignment: false,
+                  showClearFormat: true,
+                  showCodeBlock: false,
+                  showColorButton: false,
+                  showDirection: false,
+                  showDividers: false,
+                  showFontFamily: false,
+                  showFontSize: false,
+                  showHeaderStyle: false,
+                  showInlineCode: false,
+                  showItalicButton: true,
+                  showJustifyAlignment: false,
+                  showLeftAlignment: false,
+                  showLink: true,
+                  showListBullets: true,
+                  showListCheck: false,
+                  showListNumbers: true,
+                  showQuote: true,
+                  showRedo: true,
+                  showRightAlignment: false,
+                  showSearchButton: false,
+                  showSmallButton: false,
+                  showStrikeThrough: true,
+                  showSubscript: false,
+                  showSuperscript: false,
+                  showUndo: true,
+                  multiRowsDisplay: false,
+                  toolbarIconAlignment: WrapAlignment.start,
+                  toolbarSectionSpacing: 8,
+                ),
+              ),
+              const Divider(height: 1, thickness: 1, color: AppColors.border),
+              Container(
+                height: 300,
+                padding: const EdgeInsets.all(12),
+                child: QuillEditor.basic(
+                  controller: controller.quillController,
+                  config: QuillEditorConfig(
+                    padding: EdgeInsets.zero,
+                    expands: false,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],

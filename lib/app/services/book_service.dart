@@ -475,6 +475,20 @@ class BookService extends GetxService {
         .eq('id', bookId);
   }
 
+  /// Mengirimkan karya untuk approval (publish).
+  ///
+  /// Mengubah status dari 'draft' ke 'pending' (menunggu approval admin).
+  /// Hanya berhasil untuk karya milik penulis sendiri (RLS).
+  Future<void> submitForApproval(String bookId) async {
+    await supabase
+        .from(SupabaseConfig.booksTable)
+        .update({
+          'approval_status': 'pending',
+          'submitted_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('id', bookId);
+  }
+
   // ------------------------------------------------------------------
   // MAPPER
   // ------------------------------------------------------------------
@@ -512,5 +526,75 @@ class BookService extends GetxService {
       rating: (j['rating'] as num?)?.toDouble() ?? 0.0,
       chapterCount: (j['total_chapters'] as num?)?.toInt() ?? 1,
     );
+  }
+
+  // ============================================================
+  // FOLLOW / UNFOLLOW
+  // ============================================================
+
+  /// Cek apakah user login sedang follow penulis tertentu.
+  Future<bool> isFollowing(String authorId) async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return false;
+
+    try {
+      final response = await supabase
+          .from('follows')
+          .select('id')
+          .eq('follower_id', userId)
+          .eq('following_id', authorId)
+          .maybeSingle();
+      return response != null;
+    } catch (e) {
+      print('Check follow error: $e');
+      return false;
+    }
+  }
+
+  /// Follow/unfollow penulis. Update `followers_count` di tabel users.
+  Future<bool> toggleFollow(String authorId) async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return false;
+    if (userId == authorId) return false; // tidak bisa follow diri sendiri
+
+    final currentlyFollowing = await isFollowing(authorId);
+
+    try {
+      if (currentlyFollowing) {
+        // Unfollow
+        await supabase.from('follows').delete().match({
+          'follower_id': userId,
+          'following_id': authorId,
+        });
+        // Decrement followers_count
+        await supabase.rpc('decrement_followers', params: {'target_id': authorId});
+      } else {
+        // Follow
+        await supabase.from('follows').insert({
+          'follower_id': userId,
+          'following_id': authorId,
+        });
+        // Increment followers_count
+        await supabase.rpc('increment_followers', params: {'target_id': authorId});
+      }
+      return true;
+    } catch (e) {
+      print('Toggle follow error: $e');
+      return false;
+    }
+  }
+
+  /// Ambil jumlah followers penulis.
+  Future<int> getFollowersCount(String authorId) async {
+    try {
+      final response = await supabase
+          .from('follows')
+          .select('id')
+          .eq('following_id', authorId);
+      return (response as List).length;
+    } catch (e) {
+      print('Get followers count error: $e');
+      return 0;
+    }
   }
 }

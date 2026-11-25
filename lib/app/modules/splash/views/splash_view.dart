@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../theme/app_colors.dart';
 import '../controllers/splash_controller.dart';
 
 class SplashView extends GetView<SplashController> {
@@ -8,7 +9,7 @@ class SplashView extends GetView<SplashController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 246, 247, 248),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
           child: Column(
@@ -38,7 +39,7 @@ class SplashView extends GetView<SplashController> {
                     height: 50,
                     child: CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.white,
+                        AppColors.primaryNavy,
                       ),
                       strokeWidth: 3,
                     ),

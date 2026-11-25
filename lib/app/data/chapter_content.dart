@@ -143,4 +143,26 @@ class ChapterContent {
     if (trimmed.isEmpty) return 0;
     return trimmed.split(RegExp(r'\s+')).length;
   }
+
+  /// Menghapus satu bab berdasarkan nomor bab.
+  ///
+  /// Mengembalikan konten baru tanpa bab yang dihapus, dan
+  /// menyesuaikan nomor bab berikutnya (re-index).
+  static String remove({
+    required String content,
+    required int number,
+  }) {
+    final blocks = parse(content);
+    if (blocks.isEmpty) return '';
+
+    // Filter out the chapter to delete
+    final remaining = blocks.where((b) => b.number != number).toList();
+
+    // Re-index remaining chapters sequentially (1, 2, 3...)
+    final rebuilt = [
+      for (var i = 0; i < remaining.length; i++)
+        _block(number: i + 1, title: remaining[i].title, body: remaining[i].body),
+    ];
+    return rebuilt.join(separator);
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../data/models/book_model.dart';
 import '../../../routes/app_routes.dart';
@@ -21,10 +22,20 @@ class PencarianController extends GetxController {
 
   final RxString searchText = ''.obs;
 
+  SupabaseClient get _supabase => Supabase.instance.client;
+  RealtimeChannel? _realtimeChannel;
+
   @override
   void onInit() {
     super.onInit();
     loadBooks();
+    _subscribeToApprovedWorks();
+  }
+
+  @override
+  void onClose() {
+    _realtimeChannel?.unsubscribe();
+    super.onClose();
   }
 
   Future<void> loadBooks() async {
@@ -34,6 +45,26 @@ class PencarianController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// Langganan real-time untuk perubahan karya approved.
+  void _subscribeToApprovedWorks() {
+    _realtimeChannel = _supabase
+        .channel('public:books_approved_search')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'books',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'approval_status',
+            value: 'approved',
+          ),
+          callback: (payload) {
+            loadBooks();
+          },
+        )
+        .subscribe();
   }
 
   List<BookModel> get results {

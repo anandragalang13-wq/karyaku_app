@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../data/models/review_model.dart';
+import '../../../services/auth_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/book_cover.dart';
 import '../../../widgets/rating_stars.dart';
@@ -23,12 +24,12 @@ class DetailBukuView extends GetView<DetailBukuController> {
             expandedHeight: 300,
             backgroundColor: AppColors.background,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+              icon: Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
               onPressed: Get.back,
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
+                icon: Icon(Icons.more_vert_rounded, color: AppColors.textPrimary),
                 onPressed: () {},
               ),
             ],
@@ -90,6 +91,54 @@ class DetailBukuView extends GetView<DetailBukuController> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 10),
+                  // Follow button + followers count
+                  Obx(() {
+                    final isLoggedIn = AuthService.to.isLoggedIn.value;
+                    if (book.authorId.isEmpty || !isLoggedIn) {
+                      return const SizedBox.shrink();
+                    }
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${controller.followersCount.value} ${'followers_count'.tr}',
+                          style: TextStyle(
+                              color: AppColors.textSecondary, fontSize: 12),
+                        ),
+                        const SizedBox(width: 12),
+                        OutlinedButton.icon(
+                          onPressed: controller.toggleFollow,
+                          icon: Icon(
+                            controller.isFollowing.value
+                                ? Icons.check_circle_outline_rounded
+                                : Icons.person_add_rounded,
+                            size: 16,
+                          ),
+                          label: Text(
+                            controller.isFollowing.value
+                                ? 'following_button'.tr
+                                : 'follow_button'.tr,
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: controller.isFollowing.value
+                                ? AppColors.success
+                                : AppColors.accentBlue,
+                            side: BorderSide(
+                              color: controller.isFollowing.value
+                                  ? AppColors.success
+                                  : AppColors.accentBlue,
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            minimumSize: const Size(0, 32),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
                   const SizedBox(height: 14),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

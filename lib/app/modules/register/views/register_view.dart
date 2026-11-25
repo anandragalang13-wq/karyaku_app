@@ -28,9 +28,26 @@ class RegisterView extends GetView<RegisterController> {
                         const SizedBox(height: 6),
                         TextField(
                           controller: controller.nameController,
-                          decoration: const InputDecoration(
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
                             hintText: 'Masukkan nama lengkap Anda',
-                            prefixIcon: Icon(Icons.person_outline_rounded),
+                            hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                            prefixIcon: Icon(Icons.person_outline_rounded, color: Colors.white.withOpacity(0.7)),
+                            filled: true,
+                            fillColor: AppColors.primaryNavy,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: AppColors.primaryNavyLight.withOpacity(0.5)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: AppColors.accentOrange, width: 2),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -39,9 +56,26 @@ class RegisterView extends GetView<RegisterController> {
                         TextField(
                           controller: controller.emailController,
                           keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
                             hintText: 'Masukkan email Anda',
-                            prefixIcon: Icon(Icons.mail_outline_rounded),
+                            hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                            prefixIcon: Icon(Icons.mail_outline_rounded, color: Colors.white.withOpacity(0.7)),
+                            filled: true,
+                            fillColor: AppColors.primaryNavy,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: AppColors.primaryNavyLight.withOpacity(0.5)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: AppColors.accentOrange, width: 2),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -51,17 +85,35 @@ class RegisterView extends GetView<RegisterController> {
                           () => TextField(
                             controller: controller.passwordController,
                             obscureText: controller.isPasswordHidden.value,
+                            style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
                               hintText: 'Buat kata sandi (min. 6 karakter)',
-                              prefixIcon: const Icon(Icons.lock_outline_rounded),
+                              hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                              prefixIcon: Icon(Icons.lock_outline_rounded, color: Colors.white.withOpacity(0.7)),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   controller.isPasswordHidden.value
                                       ? Icons.visibility_off_outlined
                                       : Icons.visibility_outlined,
                                   size: 20,
+                                  color: Colors.white.withOpacity(0.7),
                                 ),
                                 onPressed: controller.togglePasswordVisibility,
+                              ),
+                              filled: true,
+                              fillColor: AppColors.primaryNavy,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(color: AppColors.primaryNavyLight.withOpacity(0.5)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(color: AppColors.accentOrange, width: 2),
                               ),
                             ),
                           ),
@@ -73,17 +125,35 @@ class RegisterView extends GetView<RegisterController> {
                           () => TextField(
                             controller: controller.confirmPasswordController,
                             obscureText: controller.isConfirmPasswordHidden.value,
+                            style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
                               hintText: 'Ulangi kata sandi Anda',
-                              prefixIcon: const Icon(Icons.lock_outline_rounded),
+                              hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                              prefixIcon: Icon(Icons.lock_outline_rounded, color: Colors.white.withOpacity(0.7)),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   controller.isConfirmPasswordHidden.value
                                       ? Icons.visibility_off_outlined
                                       : Icons.visibility_outlined,
                                   size: 20,
+                                  color: Colors.white.withOpacity(0.7),
                                 ),
                                 onPressed: controller.toggleConfirmPasswordVisibility,
+                              ),
+                              filled: true,
+                              fillColor: AppColors.primaryNavy,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(color: AppColors.primaryNavyLight.withOpacity(0.5)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(color: AppColors.accentOrange, width: 2),
                               ),
                             ),
                           ),
@@ -182,7 +252,7 @@ class RegisterView extends GetView<RegisterController> {
               top: 4,
               left: 4,
               child: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
                 onPressed: Get.back,
               ),
             ),

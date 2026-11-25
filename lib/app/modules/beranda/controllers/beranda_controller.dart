@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../data/models/work_model.dart';
 import '../../../data/models/work_model_exension.dart';
 import '../../../routes/app_routes.dart';
@@ -25,11 +27,20 @@ class BerandaController extends GetxController {
   final RxString errorMessage = ''.obs;
 
   BookService get _books => Get.find<BookService>();
+  SupabaseClient get _supabase => Supabase.instance.client;
+  RealtimeChannel? _realtimeChannel;
 
   @override
   void onInit() {
     super.onInit();
     loadBerandaData();
+    _subscribeToApprovedWorks();
+  }
+
+  @override
+  void onClose() {
+    _realtimeChannel?.unsubscribe();
+    super.onClose();
   }
 
   /// Memuat semua karya approved dari Supabase.
@@ -39,14 +50,42 @@ class BerandaController extends GetxController {
       errorMessage.value = '';
 
       final works = await _books.getApprovedWorks(); // sudah urut views
+      debugPrint('Beranda: ${works.length} karya approved dimuat');
+      for (final w in works) {
+        debugPrint(
+            '  - ${w.title} | type: ${w.type} | tags: ${w.tags} | author: ${w.authorName}');
+      }
       allWorks.assignAll(works);
       _applyCategory();
-    } catch (e) {
+    } catch (e, st) {
       errorMessage.value = 'Gagal memuat karya: $e';
-      print('Error loading beranda data: $e');
+      debugPrint('Error loading beranda data: $e\n$st');
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// Langganan real-time untuk perubahan karya approved.
+  /// Hanya reload saat ada karya BARU yang di-approve (INSERT).
+  /// Hindari UPDATE (views) supaya tidak reload terus-menerus.
+  void _subscribeToApprovedWorks() {
+    _realtimeChannel = _supabase
+        .channel('public:books_approved')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'books',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'approval_status',
+            value: 'approved',
+          ),
+          callback: (payload) {
+            // Hanya refresh saat ada karya baru yang di-approve
+            loadBerandaData();
+          },
+        )
+        .subscribe();
   }
 
   /// Filter karya berdasarkan kategori/tipe (dari data yang sudah dimuat).

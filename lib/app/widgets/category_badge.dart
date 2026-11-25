@@ -8,16 +8,22 @@ class CategoryBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final badgeColor = isDark
+        ? AppColors.darkBadgeForCategory(category)
+        : AppColors.badgeForCategory(category);
+    final textColor = isDark ? AppColors.darkBackground : Colors.white;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.badgeForCategory(category),
+        color: badgeColor,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         category,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: textColor,
           fontSize: 11,
           fontWeight: FontWeight.w600,
         ),
